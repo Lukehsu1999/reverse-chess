@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reverse Chess (5×5)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1>Reverse Chess</h1>
+        <div class="sub">5×5 · forced 1→12 · 4-neighbor LCC scoring · 1 random blocked cell</div>
+      </div>
+      <div class="controls">
+        <button id="newGameBtn" class="btn">New Game</button>
+        <button id="resetBtn" class="btn btn-secondary">Reset (same block)</button>
+      </div>
+    </header>
+
+    <section class="status">
+      <div class="pill" id="turnPill">Turn: 1 / 24</div>
+      <div class="pill" id="playerPill">Current: Blue</div>
+      <div class="pill" id="nextPill">Next piece — Blue: 1 · Red: 1</div>
+    </section>
+
+    <main class="main">
+      <div id="board" class="board" aria-label="Reverse Chess board"></div>
+    </main>
+
+    <section class="result" id="result" hidden>
+      <h2>Result</h2>
+      <div class="scores">
+        <div class="score blue">
+          <div class="label">Blue LCC score</div>
+          <div class="value" id="blueScore">0</div>
+        </div>
+        <div class="score red">
+          <div class="label">Red LCC score</div>
+          <div class="value" id="redScore">0</div>
+        </div>
+      </div>
+      <div class="winner" id="winnerText"></div>
+      <div class="hint">Gold outline shows each player’s selected Largest Connected Component (tie: higher sum).</div>
+    </section>
+
+    <footer class="footer">
+      Click an empty square to place the current piece value.
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
