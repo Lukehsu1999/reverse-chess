@@ -18,6 +18,7 @@ const CellType = {
 const elBoard = document.getElementById("board");
 const elNewGame = document.getElementById("newGameBtn");
 const elReset = document.getElementById("resetBtn");
+const elUndo = document.getElementById("undoBtn");
 
 const elTurn = document.getElementById("turnPill");
 const elPlayer = document.getElementById("playerPill");
@@ -29,6 +30,43 @@ const elRedScore = document.getElementById("redScore");
 const elWinnerText = document.getElementById("winnerText");
 
 let state = null;
+let history = []; // snapshots of game state for undo
+
+function cloneBoard(board){
+  return board.map(row => row.slice());
+}
+
+function snapshotState(s){
+  return {
+    board: cloneBoard(s.board),
+    blockedIndex: s.blockedIndex,
+    turn: s.turn,
+    current: s.current,
+    nextVal: { blue: s.nextVal.blue, red: s.nextVal.red },
+    gameOver: s.gameOver,
+    scores: { blue: s.scores.blue, red: s.scores.red },
+    lcc: {
+      blue: Array.from(s.lcc.blue),
+      red: Array.from(s.lcc.red),
+    },
+  };
+}
+
+function restoreSnapshot(snap){
+  state = {
+    board: cloneBoard(snap.board),
+    blockedIndex: snap.blockedIndex,
+    turn: snap.turn,
+    current: snap.current,
+    nextVal: { blue: snap.nextVal.blue, red: snap.nextVal.red },
+    gameOver: snap.gameOver,
+    scores: { blue: snap.scores.blue, red: snap.scores.red },
+    lcc: {
+      blue: new Set(snap.lcc.blue),
+      red: new Set(snap.lcc.red),
+    },
+  };
+}
 
 function randInt(max) {
   return Math.floor(Math.random() * max);
@@ -86,14 +124,14 @@ function isEmptyCell(board, r, c) {
 }
 
 function place(r, c) {
-  if (state.gameOver) return;
+  if (state.gameOver) return false;
 
   const cell = state.board[r][c];
-  if (cell !== CellType.EMPTY) return; // includes blocked
+  if (cell !== CellType.EMPTY) return false; // includes blocked
 
   const p = state.current;
   const v = state.nextVal[p];
-  if (v > PIECES) return;
+  if (v > PIECES) return false;
 
   // encode pieces as signed ints: blue positive, red negative
   state.board[r][c] = (p === "blue") ? v : -v;
@@ -105,6 +143,14 @@ function place(r, c) {
   if (state.turn >= TOTAL_MOVES) {
     finalize();
   }
+
+  // If we've undone before, truncate any "future" history then append new snapshot
+  if (history.length) {
+    // history always reflects the current state at the end, so just push
+    history.push(snapshotState(state));
+  }
+
+  return true;
 }
 
 function ownerAndValue(cell) {
@@ -199,7 +245,14 @@ function updateStatus() {
   const nb = state.nextVal.blue <= PIECES ? state.nextVal.blue : "—";
   const nr = state.nextVal.red <= PIECES ? state.nextVal.red : "—";
   elNext.textContent = `Next piece — Blue: ${nb} · Red: ${nr}`;
+  updateUndoBtn();
 }
+
+function updateUndoBtn(){
+  if (!elUndo) return;
+  elUndo.disabled = history.length <= 1;
+}
+
 
 function render() {
   elBoard.innerHTML = "";
@@ -222,7 +275,11 @@ function render() {
         cell.textContent = "";
         if (!state.gameOver) {
           cell.addEventListener("click", () => {
-            place(r, c);
+            const ok = place(r, c);
+            if (ok) {
+              // If game just ended, show/hide result accordingly
+              elResult.hidden = !state.gameOver;
+            }
             updateStatus();
             render();
           });
@@ -246,6 +303,7 @@ function render() {
 
 function newGame() {
   state = initState(true);
+  history = [snapshotState(state)];
   elResult.hidden = true;
   updateStatus();
   render();
@@ -253,7 +311,33 @@ function newGame() {
 
 function resetSameBlock() {
   state = initState(false);
+  history = [snapshotState(state)];
   elResult.hidden = true;
+  updateStatus();
+  render();
+}
+
+
+function undoOneStep() {
+  if (history.length <= 1) return;
+
+  // drop current snapshot
+  history.pop();
+  const prev = history[history.length - 1];
+  restoreSnapshot(prev);
+
+  // hide/show result based on restored state
+  if (state.gameOver) {
+    elBlueScore.textContent = String(state.scores.blue);
+    elRedScore.textContent = String(state.scores.red);
+    if (state.scores.blue > state.scores.red) elWinnerText.textContent = "Winner: Blue";
+    else if (state.scores.red > state.scores.blue) elWinnerText.textContent = "Winner: Red";
+    else elWinnerText.textContent = "Draw";
+    elResult.hidden = false;
+  } else {
+    elResult.hidden = true;
+  }
+
   updateStatus();
   render();
 }
@@ -261,6 +345,7 @@ function resetSameBlock() {
 // Wire up controls
 elNewGame.addEventListener("click", newGame);
 elReset.addEventListener("click", resetSameBlock);
+if (elUndo) elUndo.addEventListener("click", undoOneStep);
 
 // Start
 newGame();
