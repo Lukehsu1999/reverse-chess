@@ -198,3 +198,5 @@ h1{
   font-size: 13px;
   text-align: center;
 }
+
+.btn:disabled{ opacity: 0.5; cursor: not-allowed; filter:none; }
