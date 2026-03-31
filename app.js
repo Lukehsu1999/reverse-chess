@@ -2,13 +2,47 @@
 // Rules:
 // - 5x5 board, 1 random blocked cell (cannot place)
 // - Two players alternate
-// - Each player places values 1..12 in order (forced)
+// - Each player places values according to selected value mode
 // - Final score = value sum of player's Largest Connected Component (4-neighbor)
 // - If multiple components share max size, choose the one with max sum
 
 const N = 5;
 const PIECES = 12;
 const TOTAL_MOVES = PIECES * 2;
+
+// =========================
+// VALUE SYSTEM
+// =========================
+// options: "linear", "fibonacci", "quadratic", "custom"
+const VALUE_MODE = "fibonacci";
+
+function generateValues(mode, n) {
+  if (mode === "linear") {
+    return Array.from({ length: n }, (_, i) => i + 1);
+  }
+
+  if (mode === "fibonacci") {
+    const fib = [1, 1];
+    while (fib.length < n) {
+      fib.push(fib[fib.length - 1] + fib[fib.length - 2]);
+    }
+    return fib.slice(0, n);
+  }
+
+  if (mode === "quadratic") {
+    return Array.from({ length: n }, (_, i) => (i + 1) ** 2);
+  }
+
+  if (mode === "custom") {
+    // Example custom curve
+    return [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+  }
+
+  // fallback
+  return Array.from({ length: n }, (_, i) => i + 1);
+}
+
+const VALUES = generateValues(VALUE_MODE, PIECES);
 
 const CellType = {
   EMPTY: 0,
@@ -32,11 +66,11 @@ const elWinnerText = document.getElementById("winnerText");
 let state = null;
 let history = []; // snapshots of game state for undo
 
-function cloneBoard(board){
+function cloneBoard(board) {
   return board.map(row => row.slice());
 }
 
-function snapshotState(s){
+function snapshotState(s) {
   return {
     board: cloneBoard(s.board),
     blockedIndex: s.blockedIndex,
@@ -52,7 +86,7 @@ function snapshotState(s){
   };
 }
 
-function restoreSnapshot(snap){
+function restoreSnapshot(snap) {
   state = {
     board: cloneBoard(snap.board),
     blockedIndex: snap.blockedIndex,
@@ -75,6 +109,7 @@ function randInt(max) {
 function idx(r, c) {
   return r * N + c;
 }
+
 function rc(i) {
   return [Math.floor(i / N), i % N];
 }
@@ -92,11 +127,10 @@ function initState(randomBlock = true) {
   let blockedIndex = state?.blockedIndex ?? null;
 
   if (randomBlock || blockedIndex === null) {
-    // random blocked cell
     blockedIndex = randInt(N * N);
     // If you want to exclude center, uncomment:
     // const center = idx(2,2);
-    // while (blockedIndex === center) blockedIndex = randInt(N*N);
+    // while (blockedIndex === center) blockedIndex = randInt(N * N);
   }
 
   const board = Array.from({ length: N }, () => Array(N).fill(CellType.EMPTY));
@@ -106,11 +140,12 @@ function initState(randomBlock = true) {
   return {
     board,
     blockedIndex,
-    turn: 0,                // 0..23
-    current: "blue",        // "blue" or "red"
+    turn: 0,
+    current: "blue",
+    // these are now piece indices: 1..PIECES
     nextVal: { blue: 1, red: 1 },
     gameOver: false,
-    lcc: { blue: new Set(), red: new Set() }, // highlight sets of "r,c"
+    lcc: { blue: new Set(), red: new Set() },
     scores: { blue: 0, red: 0 },
   };
 }
@@ -130,8 +165,10 @@ function place(r, c) {
   if (cell !== CellType.EMPTY) return false; // includes blocked
 
   const p = state.current;
-  const v = state.nextVal[p];
-  if (v > PIECES) return false;
+  const index = state.nextVal[p] - 1;
+  if (index >= PIECES) return false;
+
+  const v = VALUES[index];
 
   // encode pieces as signed ints: blue positive, red negative
   state.board[r][c] = (p === "blue") ? v : -v;
@@ -144,9 +181,7 @@ function place(r, c) {
     finalize();
   }
 
-  // If we've undone before, truncate any "future" history then append new snapshot
   if (history.length) {
-    // history always reflects the current state at the end, so just push
     history.push(snapshotState(state));
   }
 
@@ -169,7 +204,6 @@ function computeLCC(player) {
       const [own] = ownerAndValue(state.board[r][c]);
       if (own !== player) continue;
 
-      // BFS
       const q = [[r, c]];
       visited[r][c] = true;
       let cells = [];
@@ -197,7 +231,7 @@ function computeLCC(player) {
 
   if (comps.length === 0) {
     return { score: 0, highlight: new Set() };
-    }
+  }
 
   // choose by (size desc, sum desc)
   comps.sort((a, b) => {
@@ -220,7 +254,6 @@ function finalize() {
   state.lcc.blue = blue.highlight;
   state.lcc.red = red.highlight;
 
-  // show result
   elBlueScore.textContent = String(state.scores.blue);
   elRedScore.textContent = String(state.scores.red);
 
@@ -242,17 +275,22 @@ function updateStatus() {
   const p = state.current;
   elPlayer.textContent = `Current: ${p === "blue" ? "Blue" : "Red"}`;
 
-  const nb = state.nextVal.blue <= PIECES ? state.nextVal.blue : "—";
-  const nr = state.nextVal.red <= PIECES ? state.nextVal.red : "—";
+  const nb = state.nextVal.blue <= PIECES
+    ? VALUES[state.nextVal.blue - 1]
+    : "—";
+
+  const nr = state.nextVal.red <= PIECES
+    ? VALUES[state.nextVal.red - 1]
+    : "—";
+
   elNext.textContent = `Next piece — Blue: ${nb} · Red: ${nr}`;
   updateUndoBtn();
 }
 
-function updateUndoBtn(){
+function updateUndoBtn() {
   if (!elUndo) return;
   elUndo.disabled = history.length <= 1;
 }
-
 
 function render() {
   elBoard.innerHTML = "";
@@ -264,7 +302,6 @@ function render() {
 
       const v = state.board[r][c];
 
-      // highlight if in chosen LCC after game end
       const key = cellKey(r, c);
       const inBlue = state.lcc.blue.has(key);
       const inRed = state.lcc.red.has(key);
@@ -277,7 +314,6 @@ function render() {
           cell.addEventListener("click", () => {
             const ok = place(r, c);
             if (ok) {
-              // If game just ended, show/hide result accordingly
               elResult.hidden = !state.gameOver;
             }
             updateStatus();
@@ -307,6 +343,9 @@ function newGame() {
   elResult.hidden = true;
   updateStatus();
   render();
+
+  console.log("VALUE MODE:", VALUE_MODE);
+  console.log("VALUES:", VALUES);
 }
 
 function resetSameBlock() {
@@ -315,18 +354,18 @@ function resetSameBlock() {
   elResult.hidden = true;
   updateStatus();
   render();
-}
 
+  console.log("VALUE MODE:", VALUE_MODE);
+  console.log("VALUES:", VALUES);
+}
 
 function undoOneStep() {
   if (history.length <= 1) return;
 
-  // drop current snapshot
   history.pop();
   const prev = history[history.length - 1];
   restoreSnapshot(prev);
 
-  // hide/show result based on restored state
   if (state.gameOver) {
     elBlueScore.textContent = String(state.scores.blue);
     elRedScore.textContent = String(state.scores.red);
