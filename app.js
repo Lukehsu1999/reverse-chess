@@ -14,7 +14,7 @@ const TOTAL_MOVES = PIECES * 2;
 // VALUE SYSTEM
 // =========================
 // options: "linear", "fibonacci", "quadratic", "custom"
-const VALUE_MODE = "fibonacci";
+const VALUE_MODE = "custom";
 
 function generateValues(mode, n) {
   if (mode === "linear") {
@@ -35,7 +35,7 @@ function generateValues(mode, n) {
 
   if (mode === "custom") {
     // Example custom curve
-    return [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+    return [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56, 67];
   }
 
   // fallback
