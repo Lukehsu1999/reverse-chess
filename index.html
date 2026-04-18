@@ -26,8 +26,14 @@
       <div class="pill" id="nextPill">Next piece — Blue: 1 · Red: 1</div>
     </section>
 
+    <!-- 🔥 NEW: piece tracker -->
+    <section class="piece-tracker">
+      <div class="row blue" id="blueTracker"></div>
+      <div class="row red" id="redTracker"></div>
+    </section>
+
     <main class="main">
-      <div id="board" class="board" aria-label="Reverse Chess board"></div>
+      <div id="board" class="board"></div>
     </main>
 
     <section class="result" id="result" hidden>
@@ -43,7 +49,6 @@
         </div>
       </div>
       <div class="winner" id="winnerText"></div>
-      <div class="hint">Gold outline shows each player’s selected Largest Connected Component (tie: higher sum).</div>
     </section>
 
     <footer class="footer">
