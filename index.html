@@ -9,10 +9,11 @@
 <body>
   <div class="app">
     <header class="header">
-      <div>
+      <div class="title-group">
         <h1>Reverse Chess</h1>
         <div class="sub">5×5 · forced 1→12 · 4-neighbor LCC scoring · 1 random blocked cell</div>
       </div>
+
       <div class="controls">
         <button id="newGameBtn" class="btn">New Game</button>
         <button id="resetBtn" class="btn btn-secondary">Reset (same block)</button>
@@ -20,20 +21,36 @@
       </div>
     </header>
 
-    <section class="status">
-      <div class="pill" id="turnPill">Turn: 1 / 24</div>
-      <div class="pill" id="playerPill">Current: Blue</div>
-      <div class="pill" id="nextPill">Next piece — Blue: 1 · Red: 1</div>
-    </section>
+    <main class="game-layout">
+      <aside class="side-panel">
+        <section class="info-card">
+          <div class="section-title">How to Play</div>
+          <div class="rules">
+            Players take turns placing pieces in order. Final score is the sum of your largest connected group (4-directional).
+          </div>
+        </section>
 
-    <!-- 🔥 NEW: piece tracker -->
-    <section class="piece-tracker">
-      <div class="row blue" id="blueTracker"></div>
-      <div class="row red" id="redTracker"></div>
-    </section>
+        <section class="info-card">
+          <div class="section-title">Game Status</div>
+          <div class="status">
+            <div class="pill" id="turnPill">Turn: 1 / 24</div>
+            <div class="pill" id="playerPill">Current: Blue</div>
+            <div class="pill" id="nextPill">Next piece — Blue: 1 · Red: 1</div>
+          </div>
+        </section>
 
-    <main class="main">
-      <div id="board" class="board" aria-label="Reverse Chess board"></div>
+        <section class="info-card">
+          <div class="section-title">Remaining Pieces</div>
+          <div class="piece-tracker">
+            <div class="row blue" id="blueTracker"></div>
+            <div class="row red" id="redTracker"></div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="board-panel">
+        <div id="board" class="board" aria-label="Reverse Chess board"></div>
+      </section>
     </main>
 
     <section class="result" id="result" hidden>
