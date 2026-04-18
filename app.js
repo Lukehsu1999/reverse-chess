@@ -63,10 +63,6 @@ const elBlueScore = document.getElementById("blueScore");
 const elRedScore = document.getElementById("redScore");
 const elWinnerText = document.getElementById("winnerText");
 
-
-const elBlueTracker = document.getElementById("blueTracker");
-const elRedTracker = document.getElementById("redTracker");
-
 let state = null;
 let history = []; // snapshots of game state for undo
 
@@ -296,41 +292,6 @@ function updateUndoBtn() {
   elUndo.disabled = history.length <= 1;
 }
 
-function renderTracker() {
-  elBlueTracker.innerHTML = "";
-  elRedTracker.innerHTML = "";
-
-  for (let i = 0; i < PIECES; i++) {
-    const val = VALUES[i];
-
-    // BLUE
-    const blueBox = document.createElement("div");
-    blueBox.className = "piece-box";
-    blueBox.textContent = val;
-
-    if (i < state.nextVal.blue - 1) {
-      blueBox.classList.add("used");
-    } else if (i === state.nextVal.blue - 1 && state.current === "blue") {
-      blueBox.classList.add("current");
-    }
-
-    elBlueTracker.appendChild(blueBox);
-
-    // RED
-    const redBox = document.createElement("div");
-    redBox.className = "piece-box";
-    redBox.textContent = val;
-
-    if (i < state.nextVal.red - 1) {
-      redBox.classList.add("used");
-    } else if (i === state.nextVal.red - 1 && state.current === "red") {
-      redBox.classList.add("current");
-    }
-
-    elRedTracker.appendChild(redBox);
-  }
-}
-
 function render() {
   elBoard.innerHTML = "";
 
@@ -374,8 +335,6 @@ function render() {
       elBoard.appendChild(cell);
     }
   }
-
-  renderTracker()
 }
 
 function newGame() {
