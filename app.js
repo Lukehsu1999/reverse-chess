@@ -14,7 +14,7 @@ const TOTAL_MOVES = PIECES * 2;
 // VALUE SYSTEM
 // =========================
 // options: "linear", "fibonacci", "quadratic", "custom"
-const VALUE_MODE = "fibonacci";
+const VALUE_MODE = "custom";
 
 function generateValues(mode, n) {
   if (mode === "linear") {
