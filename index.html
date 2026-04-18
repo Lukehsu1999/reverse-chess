@@ -15,6 +15,15 @@
       </div>
 
       <div class="controls">
+        <label class="mode-control">
+          <span class="mode-label">Mode</span>
+          <select id="modeSelect" class="mode-select">
+            <option value="linear">Linear</option>
+            <option value="decreaseLinear">DecreaseLinear</option>
+            <option value="fibonacci" selected>Fibonacci</option>
+          </select>
+        </label>
+
         <button id="newGameBtn" class="btn">New Game</button>
         <button id="resetBtn" class="btn btn-secondary">Reset (same block)</button>
         <button id="undoBtn" class="btn btn-secondary" disabled>Undo</button>

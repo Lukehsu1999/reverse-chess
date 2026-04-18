@@ -13,12 +13,16 @@ const TOTAL_MOVES = PIECES * 2;
 // =========================
 // VALUE SYSTEM
 // =========================
-// options: "linear", "fibonacci", "quadratic", "custom"
-const VALUE_MODE = "custom";
+// options: "linear", "decreaseLinear", "fibonacci"
+const DEFAULT_VALUE_MODE = "fibonacci";
 
 function generateValues(mode, n) {
   if (mode === "linear") {
     return Array.from({ length: n }, (_, i) => i + 1);
+  }
+
+  if (mode === "decreaseLinear") {
+    return Array.from({ length: n }, (_, i) => n - i);
   }
 
   if (mode === "fibonacci") {
@@ -29,20 +33,12 @@ function generateValues(mode, n) {
     return fib.slice(0, n);
   }
 
-  if (mode === "quadratic") {
-    return Array.from({ length: n }, (_, i) => (i + 1) ** 2);
-  }
-
-  if (mode === "custom") {
-    // Example custom curve
-    return [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56, 67];
-  }
-
   // fallback
   return Array.from({ length: n }, (_, i) => i + 1);
 }
 
-const VALUES = generateValues(VALUE_MODE, PIECES);
+let currentValueMode = DEFAULT_VALUE_MODE;
+let VALUES = generateValues(currentValueMode, PIECES);
 
 const CellType = {
   EMPTY: 0,
@@ -53,6 +49,7 @@ const elBoard = document.getElementById("board");
 const elNewGame = document.getElementById("newGameBtn");
 const elReset = document.getElementById("resetBtn");
 const elUndo = document.getElementById("undoBtn");
+const elModeSelect = document.getElementById("modeSelect");
 
 const elTurn = document.getElementById("turnPill");
 const elPlayer = document.getElementById("playerPill");
@@ -67,7 +64,7 @@ const elBlueTracker = document.getElementById("blueTracker");
 const elRedTracker = document.getElementById("redTracker");
 
 let state = null;
-let history = []; // snapshots of game state for undo
+let history = [];
 
 function cloneBoard(board) {
   return board.map(row => row.slice());
@@ -86,10 +83,18 @@ function snapshotState(s) {
       blue: Array.from(s.lcc.blue),
       red: Array.from(s.lcc.red),
     },
+    valueMode: currentValueMode,
   };
 }
 
 function restoreSnapshot(snap) {
+  currentValueMode = snap.valueMode ?? DEFAULT_VALUE_MODE;
+  VALUES = generateValues(currentValueMode, PIECES);
+
+  if (elModeSelect) {
+    elModeSelect.value = currentValueMode;
+  }
+
   state = {
     board: cloneBoard(snap.board),
     blockedIndex: snap.blockedIndex,
@@ -131,9 +136,6 @@ function initState(randomBlock = true) {
 
   if (randomBlock || blockedIndex === null) {
     blockedIndex = randInt(N * N);
-    // If you want to exclude center, uncomment:
-    // const center = idx(2,2);
-    // while (blockedIndex === center) blockedIndex = randInt(N * N);
   }
 
   const board = Array.from({ length: N }, () => Array(N).fill(CellType.EMPTY));
@@ -145,8 +147,7 @@ function initState(randomBlock = true) {
     blockedIndex,
     turn: 0,
     current: "blue",
-    // these are now piece indices: 1..PIECES
-    nextVal: { blue: 1, red: 1 },
+    nextVal: { blue: 1, red: 1 }, // piece indices: 1..PIECES
     gameOver: false,
     lcc: { blue: new Set(), red: new Set() },
     scores: { blue: 0, red: 0 },
@@ -157,23 +158,17 @@ function cellKey(r, c) {
   return `${r},${c}`;
 }
 
-function isEmptyCell(board, r, c) {
-  return board[r][c] === CellType.EMPTY;
-}
-
 function place(r, c) {
   if (state.gameOver) return false;
 
   const cell = state.board[r][c];
-  if (cell !== CellType.EMPTY) return false; // includes blocked
+  if (cell !== CellType.EMPTY) return false;
 
   const p = state.current;
   const index = state.nextVal[p] - 1;
   if (index >= PIECES) return false;
 
   const v = VALUES[index];
-
-  // encode pieces as signed ints: blue positive, red negative
   state.board[r][c] = (p === "blue") ? v : -v;
 
   state.turn += 1;
@@ -236,7 +231,6 @@ function computeLCC(player) {
     return { score: 0, highlight: new Set() };
   }
 
-  // choose by (size desc, sum desc)
   comps.sort((a, b) => {
     if (b.size !== a.size) return b.size - a.size;
     return b.sum - a.sum;
@@ -302,30 +296,26 @@ function renderTracker() {
   for (let i = 0; i < PIECES; i++) {
     const val = VALUES[i];
 
-    // BLUE
     const blueBox = document.createElement("div");
     blueBox.className = "piece-box";
     blueBox.textContent = val;
 
     if (i < state.nextVal.blue - 1) {
       blueBox.classList.add("used");
-    } else if (i === state.nextVal.blue - 1 && state.current === "blue") {
+    } else if (i === state.nextVal.blue - 1 && state.current === "blue" && !state.gameOver) {
       blueBox.classList.add("current");
     }
-
     elBlueTracker.appendChild(blueBox);
 
-    // RED
     const redBox = document.createElement("div");
     redBox.className = "piece-box";
     redBox.textContent = val;
 
     if (i < state.nextVal.red - 1) {
       redBox.classList.add("used");
-    } else if (i === state.nextVal.red - 1 && state.current === "red") {
+    } else if (i === state.nextVal.red - 1 && state.current === "red" && !state.gameOver) {
       redBox.classList.add("current");
     }
-
     elRedTracker.appendChild(redBox);
   }
 }
@@ -373,28 +363,37 @@ function render() {
       elBoard.appendChild(cell);
     }
   }
-  renderTracker()
+
+  renderTracker();
+}
+
+function applyModeFromSelect() {
+  if (!elModeSelect) return;
+  currentValueMode = elModeSelect.value;
+  VALUES = generateValues(currentValueMode, PIECES);
 }
 
 function newGame() {
+  applyModeFromSelect();
   state = initState(true);
   history = [snapshotState(state)];
   elResult.hidden = true;
   updateStatus();
   render();
 
-  console.log("VALUE MODE:", VALUE_MODE);
+  console.log("VALUE MODE:", currentValueMode);
   console.log("VALUES:", VALUES);
 }
 
 function resetSameBlock() {
+  applyModeFromSelect();
   state = initState(false);
   history = [snapshotState(state)];
   elResult.hidden = true;
   updateStatus();
   render();
 
-  console.log("VALUE MODE:", VALUE_MODE);
+  console.log("VALUE MODE:", currentValueMode);
   console.log("VALUES:", VALUES);
 }
 
@@ -424,6 +423,13 @@ function undoOneStep() {
 elNewGame.addEventListener("click", newGame);
 elReset.addEventListener("click", resetSameBlock);
 if (elUndo) elUndo.addEventListener("click", undoOneStep);
+
+if (elModeSelect) {
+  elModeSelect.value = DEFAULT_VALUE_MODE;
+  elModeSelect.addEventListener("change", () => {
+    newGame();
+  });
+}
 
 // Start
 newGame();
