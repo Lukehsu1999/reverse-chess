@@ -200,3 +200,49 @@ h1{
 }
 
 .btn:disabled{ opacity: 0.5; cursor: not-allowed; filter:none; }
+
+/* 🔥 Piece tracker */
+.piece-tracker {
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.piece-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.row.blue .piece-box {
+  background: var(--blue);
+  color: white;
+}
+
+.row.red .piece-box {
+  background: var(--red);
+  color: white;
+}
+
+/* used pieces */
+.piece-box.used {
+  background: #374151 !important;
+  color: #9ca3af;
+}
+
+/* current piece highlight */
+.piece-box.current {
+  outline: 2px solid white;
+}
