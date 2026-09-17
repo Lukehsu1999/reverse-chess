@@ -2,6 +2,10 @@
   --tile: 72px;
   --gap: 8px;
 
+  /* Width of the visual bridge connecting
+     pieces belonging to the same component. */
+  --bridge: 20px;
+
   --bg: #0b0f14;
   --panel: #111827;
   --muted: #94a3b8;
@@ -23,6 +27,7 @@
 
 body{
   margin: 0;
+
   background:
     radial-gradient(
       1200px 600px at 50% 0%,
@@ -45,13 +50,19 @@ body{
 .app{
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 20px 36px;
+
+  padding:
+    24px 20px 36px;
 }
 
 .header{
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    flex-start;
 
   gap: 24px;
 
@@ -76,6 +87,7 @@ h1{
   color: var(--muted);
 
   font-size: 14px;
+
   line-height: 1.45;
 }
 
@@ -85,14 +97,19 @@ h1{
   gap: 10px;
 
   flex-wrap: wrap;
-  justify-content: flex-end;
+
+  justify-content:
+    flex-end;
 }
 
 .btn{
   background: #1f2937;
+
   color: var(--text);
 
-  border: 1px solid var(--border);
+  border:
+    1px solid var(--border);
+
   border-radius: 12px;
 
   padding: 10px 14px;
@@ -103,21 +120,25 @@ h1{
 }
 
 .btn:hover{
-  filter: brightness(1.1);
+  filter:
+    brightness(1.1);
 }
 
 .btn:active{
-  transform: translateY(1px);
+  transform:
+    translateY(1px);
 }
 
 .btn.btn-secondary{
-  background: #0f172a;
+  background:
+    #0f172a;
 }
 
 .btn:disabled{
   opacity: 0.5;
 
-  cursor: not-allowed;
+  cursor:
+    not-allowed;
 
   filter: none;
 }
@@ -162,13 +183,16 @@ h1{
 
 .section-title{
   font-size: 12px;
+
   font-weight: 800;
 
   color: var(--muted);
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.06em;
+  letter-spacing:
+    0.06em;
 
   margin-bottom: 10px;
 }
@@ -213,6 +237,7 @@ h1{
   display: flex;
 
   justify-content: center;
+
   align-items: center;
 
   min-height: 100%;
@@ -253,6 +278,15 @@ h1{
    ========================= */
 
 .cell{
+  /*
+   * Important:
+   *
+   * position: relative allows both
+   * labels AND our connection bridges
+   * to be positioned relative to
+   * each individual cell.
+   */
+
   position: relative;
 
   width: var(--tile);
@@ -275,44 +309,190 @@ h1{
   transition:
     transform 0.04s ease,
     filter 0.08s ease;
+
+  /*
+   * Keep the cell itself above
+   * the connection bridges.
+   */
+  z-index: 1;
 }
 
 .cell:hover{
-  filter: brightness(1.05);
+  filter:
+    brightness(1.05);
 }
 
 .cell:active{
-  transform: scale(0.99);
+  transform:
+    scale(0.99);
 }
 
 .cell.empty{
-  background: var(--empty);
+  background:
+    var(--empty);
 
-  color: #0f172a;
+  color:
+    #0f172a;
 
   border-color:
     rgba(15,23,42,0.25);
 }
 
 .cell.blocked{
-  background: var(--blocked);
+  background:
+    var(--blocked);
 
-  cursor: not-allowed;
+  cursor:
+    not-allowed;
 
   border-color:
     rgba(255,255,255,0.15);
 }
 
 .cell.blue{
-  background: var(--blue);
+  background:
+    var(--blue);
 
-  color: white;
+  color:
+    white;
 }
 
 .cell.red{
-  background: var(--red);
+  background:
+    var(--red);
 
-  color: white;
+  color:
+    white;
+}
+
+
+/* =========================
+   COMPONENT CONNECTIONS
+   ========================= */
+
+/*
+ * We preserve every piece as its
+ * own rounded square.
+ *
+ * The pseudo-elements below simply
+ * fill most of the 8px grid gap.
+ *
+ * Horizontal:
+ *
+ *   [ CELL ]====[ CELL ]
+ *
+ * Vertical:
+ *
+ *   [ CELL ]
+ *      ||
+ *   [ CELL ]
+ *
+ *
+ * This makes connectivity visible
+ * without changing the underlying
+ * board structure.
+ */
+
+
+/* -------------------------
+   HORIZONTAL BRIDGE
+   ------------------------- */
+
+.cell.connect-right::after{
+  content: "";
+
+  position: absolute;
+
+  /*
+   * Start exactly at the
+   * right edge of this cell.
+   */
+  left: 100%;
+
+  /*
+   * Span the entire grid gap.
+   */
+  width: var(--gap);
+
+  /*
+   * Bridge thickness.
+   */
+  height: var(--bridge);
+
+  /*
+   * Vertically center bridge.
+   */
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  /*
+   * Behind the cells.
+   */
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+
+/* -------------------------
+   VERTICAL BRIDGE
+   ------------------------- */
+
+.cell.connect-down::before{
+  content: "";
+
+  position: absolute;
+
+  /*
+   * Start at bottom edge.
+   */
+  top: 100%;
+
+  /*
+   * Span the entire grid gap.
+   */
+  height: var(--gap);
+
+  /*
+   * Bridge thickness.
+   */
+  width: var(--bridge);
+
+  /*
+   * Horizontally center bridge.
+   */
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+
+/* -------------------------
+   BLUE CONNECTIONS
+   ------------------------- */
+
+.cell.blue.connect-right::after,
+.cell.blue.connect-down::before{
+  background:
+    var(--blue);
+}
+
+
+/* -------------------------
+   RED CONNECTIONS
+   ------------------------- */
+
+.cell.red.connect-right::after,
+.cell.red.connect-down::before{
+  background:
+    var(--red);
 }
 
 
@@ -325,14 +505,8 @@ h1{
  *
  * Large number in the center.
  *
- * Only one cell per connected
- * component receives this element.
- *
- * Example:
- *
- *          5
- *
- *         11
+ * Exactly one cell per component
+ * displays this number.
  */
 
 .component-score{
@@ -345,13 +519,20 @@ h1{
     translate(-50%, -50%);
 
   font-size: 25px;
+
   font-weight: 900;
 
   line-height: 1;
 
-  letter-spacing: -0.02em;
+  letter-spacing:
+    -0.02em;
 
   color: white;
+
+  /*
+   * Keep text above bridges.
+   */
+  z-index: 2;
 }
 
 
@@ -362,11 +543,8 @@ h1{
 /*
  * SECONDARY information.
  *
- * Small number in the
- * upper-right corner.
- *
- * This is the original value
- * of this individual piece.
+ * Original value of the
+ * individual placed piece.
  */
 
 .piece-value{
@@ -382,6 +560,8 @@ h1{
   line-height: 1;
 
   opacity: 0.78;
+
+  z-index: 2;
 }
 
 
@@ -429,6 +609,7 @@ h1{
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   font-weight: 700;
@@ -437,13 +618,15 @@ h1{
 }
 
 .row.blue .piece-box{
-  background: var(--blue);
+  background:
+    var(--blue);
 
   color: white;
 }
 
 .row.red .piece-box{
-  background: var(--red);
+  background:
+    var(--red);
 
   color: white;
 }
@@ -452,14 +635,16 @@ h1{
   background:
     #374151 !important;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 }
 
 .piece-box.current{
   outline:
     2px solid white;
 
-  outline-offset: 1px;
+  outline-offset:
+    1px;
 }
 
 
@@ -502,17 +687,22 @@ h1{
 }
 
 .score .label{
-  color: var(--muted);
+  color:
+    var(--muted);
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 .score .value{
-  font-size: 30px;
+  font-size:
+    30px;
 
-  font-weight: 900;
+  font-weight:
+    900;
 
-  margin-top: 4px;
+  margin-top:
+    4px;
 }
 
 .score.blue{
@@ -526,29 +716,39 @@ h1{
 }
 
 .winner{
-  margin-top: 10px;
+  margin-top:
+    10px;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
-  font-size: 16px;
+  font-size:
+    16px;
 }
 
 .hint{
-  margin-top: 8px;
+  margin-top:
+    8px;
 
-  color: var(--muted);
+  color:
+    var(--muted);
 
-  font-size: 12px;
+  font-size:
+    12px;
 }
 
 .footer{
-  margin-top: 16px;
+  margin-top:
+    16px;
 
-  color: var(--muted);
+  color:
+    var(--muted);
 
-  font-size: 13px;
+  font-size:
+    13px;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 
@@ -569,34 +769,45 @@ h1{
   border:
     1px solid var(--border);
 
-  border-radius: 12px;
+  border-radius:
+    12px;
 
-  padding: 8px 10px;
+  padding:
+    8px 10px;
 }
 
 .mode-label{
-  font-size: 13px;
+  font-size:
+    13px;
 
-  color: var(--muted);
+  color:
+    var(--muted);
 
-  font-weight: 600;
+  font-weight:
+    600;
 }
 
 .mode-select{
-  background: #0f172a;
+  background:
+    #0f172a;
 
-  color: var(--text);
+  color:
+    var(--text);
 
   border:
     1px solid var(--border);
 
-  border-radius: 8px;
+  border-radius:
+    8px;
 
-  padding: 6px 10px;
+  padding:
+    6px 10px;
 
-  font-size: 13px;
+  font-size:
+    13px;
 
-  font-weight: 600;
+  font-weight:
+    600;
 }
 
 
@@ -607,21 +818,26 @@ h1{
 @media (max-width: 980px){
 
   .game-layout{
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .header{
-    flex-direction: column;
+    flex-direction:
+      column;
 
-    align-items: stretch;
+    align-items:
+      stretch;
   }
 
   .controls{
-    justify-content: flex-start;
+    justify-content:
+      flex-start;
   }
 
   .board-panel{
-    overflow-x: auto;
+    overflow-x:
+      auto;
   }
 }
 
@@ -634,7 +850,8 @@ h1{
   }
 
   h1{
-    font-size: 30px;
+    font-size:
+      30px;
   }
 
   .board{
