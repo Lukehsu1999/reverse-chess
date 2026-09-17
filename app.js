@@ -10,10 +10,12 @@ const N = 5;
 const PIECES = 12;
 const TOTAL_MOVES = PIECES * 2;
 
+
 // =========================
 // VALUE SYSTEM
 // =========================
 // options: "linear", "decreaseLinear", "fibonacci"
+
 const DEFAULT_VALUE_MODE = "fibonacci";
 
 function generateValues(mode, n) {
@@ -27,9 +29,11 @@ function generateValues(mode, n) {
 
   if (mode === "fibonacci") {
     const fib = [1, 1];
+
     while (fib.length < n) {
       fib.push(fib[fib.length - 1] + fib[fib.length - 2]);
     }
+
     return fib.slice(0, n);
   }
 
@@ -37,15 +41,19 @@ function generateValues(mode, n) {
   return Array.from({ length: n }, (_, i) => i + 1);
 }
 
+
 let currentValueMode = DEFAULT_VALUE_MODE;
 let VALUES = generateValues(currentValueMode, PIECES);
+
 
 const CellType = {
   EMPTY: 0,
   BLOCKED: "X",
 };
 
+
 const elBoard = document.getElementById("board");
+
 const elNewGame = document.getElementById("newGameBtn");
 const elReset = document.getElementById("resetBtn");
 const elUndo = document.getElementById("undoBtn");
@@ -63,12 +71,19 @@ const elWinnerText = document.getElementById("winnerText");
 const elBlueTracker = document.getElementById("blueTracker");
 const elRedTracker = document.getElementById("redTracker");
 
+
 let state = null;
 let history = [];
+
+
+// =========================
+// STATE HELPERS
+// =========================
 
 function cloneBoard(board) {
   return board.map(row => row.slice());
 }
+
 
 function snapshotState(s) {
   return {
@@ -76,16 +91,28 @@ function snapshotState(s) {
     blockedIndex: s.blockedIndex,
     turn: s.turn,
     current: s.current,
-    nextVal: { blue: s.nextVal.blue, red: s.nextVal.red },
+
+    nextVal: {
+      blue: s.nextVal.blue,
+      red: s.nextVal.red,
+    },
+
     gameOver: s.gameOver,
-    scores: { blue: s.scores.blue, red: s.scores.red },
+
+    scores: {
+      blue: s.scores.blue,
+      red: s.scores.red,
+    },
+
     lcc: {
       blue: Array.from(s.lcc.blue),
       red: Array.from(s.lcc.red),
     },
+
     valueMode: currentValueMode,
   };
 }
+
 
 function restoreSnapshot(snap) {
   currentValueMode = snap.valueMode ?? DEFAULT_VALUE_MODE;
@@ -100,9 +127,19 @@ function restoreSnapshot(snap) {
     blockedIndex: snap.blockedIndex,
     turn: snap.turn,
     current: snap.current,
-    nextVal: { blue: snap.nextVal.blue, red: snap.nextVal.red },
+
+    nextVal: {
+      blue: snap.nextVal.blue,
+      red: snap.nextVal.red,
+    },
+
     gameOver: snap.gameOver,
-    scores: { blue: snap.scores.blue, red: snap.scores.red },
+
+    scores: {
+      blue: snap.scores.blue,
+      red: snap.scores.red,
+    },
+
     lcc: {
       blue: new Set(snap.lcc.blue),
       red: new Set(snap.lcc.red),
@@ -110,26 +147,47 @@ function restoreSnapshot(snap) {
   };
 }
 
+
 function randInt(max) {
   return Math.floor(Math.random() * max);
 }
+
 
 function idx(r, c) {
   return r * N + c;
 }
 
+
 function rc(i) {
-  return [Math.floor(i / N), i % N];
+  return [
+    Math.floor(i / N),
+    i % N,
+  ];
 }
+
 
 function neighbors4(r, c) {
   const out = [];
-  if (r > 0) out.push([r - 1, c]);
-  if (r < N - 1) out.push([r + 1, c]);
-  if (c > 0) out.push([r, c - 1]);
-  if (c < N - 1) out.push([r, c + 1]);
+
+  if (r > 0) {
+    out.push([r - 1, c]);
+  }
+
+  if (r < N - 1) {
+    out.push([r + 1, c]);
+  }
+
+  if (c > 0) {
+    out.push([r, c - 1]);
+  }
+
+  if (c < N - 1) {
+    out.push([r, c + 1]);
+  }
+
   return out;
 }
+
 
 function initState(randomBlock = true) {
   let blockedIndex = state?.blockedIndex ?? null;
@@ -138,7 +196,11 @@ function initState(randomBlock = true) {
     blockedIndex = randInt(N * N);
   }
 
-  const board = Array.from({ length: N }, () => Array(N).fill(CellType.EMPTY));
+  const board = Array.from(
+    { length: N },
+    () => Array(N).fill(CellType.EMPTY)
+  );
+
   const [br, bc] = rc(blockedIndex);
   board[br][bc] = CellType.BLOCKED;
 
@@ -147,33 +209,67 @@ function initState(randomBlock = true) {
     blockedIndex,
     turn: 0,
     current: "blue",
-    nextVal: { blue: 1, red: 1 }, // piece indices: 1..PIECES
+
+    // piece indices: 1..PIECES
+    nextVal: {
+      blue: 1,
+      red: 1,
+    },
+
     gameOver: false,
-    lcc: { blue: new Set(), red: new Set() },
-    scores: { blue: 0, red: 0 },
+
+    lcc: {
+      blue: new Set(),
+      red: new Set(),
+    },
+
+    scores: {
+      blue: 0,
+      red: 0,
+    },
   };
 }
+
 
 function cellKey(r, c) {
   return `${r},${c}`;
 }
 
+
+// =========================
+// PLACEMENT
+// =========================
+
 function place(r, c) {
-  if (state.gameOver) return false;
+  if (state.gameOver) {
+    return false;
+  }
 
   const cell = state.board[r][c];
-  if (cell !== CellType.EMPTY) return false;
+
+  if (cell !== CellType.EMPTY) {
+    return false;
+  }
 
   const p = state.current;
   const index = state.nextVal[p] - 1;
-  if (index >= PIECES) return false;
+
+  if (index >= PIECES) {
+    return false;
+  }
 
   const v = VALUES[index];
-  state.board[r][c] = (p === "blue") ? v : -v;
+
+  state.board[r][c] = (p === "blue")
+    ? v
+    : -v;
 
   state.turn += 1;
   state.nextVal[p] += 1;
-  state.current = (p === "blue") ? "red" : "blue";
+
+  state.current = (p === "blue")
+    ? "red"
+    : "blue";
 
   if (state.turn >= TOTAL_MOVES) {
     finalize();
@@ -186,72 +282,105 @@ function place(r, c) {
   return true;
 }
 
+
+// =========================
+// CELL HELPERS
+// =========================
+
 function ownerAndValue(cell) {
-  if (cell === CellType.EMPTY || cell === CellType.BLOCKED) {
+  if (
+    cell === CellType.EMPTY ||
+    cell === CellType.BLOCKED
+  ) {
     return [null, null];
   }
 
-  if (cell > 0) return ["blue", cell];
+  if (cell > 0) {
+    return ["blue", cell];
+  }
+
   return ["red", -cell];
 }
 
 
 // =========================
-// COMPONENT SCORES
+// LIVE COMPONENT INFO
 // =========================
 //
-// Computes the current total value of every connected component.
+// Each connected component gets:
 //
-// Returns a Map:
+// - a total score
+// - one representative "label cell"
 //
-//   "row,col" -> component total
+// The label cell is chosen as the occupied
+// cell closest to the component's centroid.
 //
-// Example:
+// Returns:
 //
-//   If three blue pieces with values 2, 3, and 5 are connected:
+// {
+//   scores: Map("row,col" -> total),
+//   labels: Set("row,col")
+// }
 //
-//       2 — 3 — 5
-//
-//   then each of those cells maps to 10.
-//
-// This is recomputed whenever render() runs, so component scores
-// automatically update after every move and after undo.
+// Every cell still knows its component total,
+// but only cells in `labels` actually DISPLAY it.
 
-function computeComponentScores() {
-  const componentScores = new Map();
+function computeComponentInfo() {
+  const scores = new Map();
+  const labels = new Set();
 
   const visited = Array.from(
     { length: N },
     () => Array(N).fill(false)
   );
 
+
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-      if (visited[r][c]) continue;
+
+      if (visited[r][c]) {
+        continue;
+      }
 
       const [player] = ownerAndValue(state.board[r][c]);
 
       // Ignore empty and blocked cells.
-      if (player === null) continue;
+      if (player === null) {
+        continue;
+      }
+
 
       const queue = [[r, c]];
       const cells = [];
+
       let sum = 0;
 
       visited[r][c] = true;
+
+
+      // -------------------------
+      // Find connected component
+      // -------------------------
 
       while (queue.length) {
         const [cr, cc] = queue.shift();
 
         cells.push([cr, cc]);
 
-        const [, value] = ownerAndValue(state.board[cr][cc]);
+        const [, value] =
+          ownerAndValue(state.board[cr][cc]);
+
         sum += value;
 
-        for (const [nr, nc] of neighbors4(cr, cc)) {
-          if (visited[nr][nc]) continue;
 
-          const [neighborPlayer] = ownerAndValue(state.board[nr][nc]);
+        for (const [nr, nc] of neighbors4(cr, cc)) {
+
+          if (visited[nr][nc]) {
+            continue;
+          }
+
+          const [neighborPlayer] =
+            ownerAndValue(state.board[nr][nc]);
 
           if (neighborPlayer === player) {
             visited[nr][nc] = true;
@@ -260,14 +389,78 @@ function computeComponentScores() {
         }
       }
 
-      // Every piece in this component displays the same total.
+
+      // -------------------------
+      // Store component total
+      // -------------------------
+
       for (const [cr, cc] of cells) {
-        componentScores.set(cellKey(cr, cc), sum);
+        scores.set(
+          cellKey(cr, cc),
+          sum
+        );
       }
+
+
+      // -------------------------
+      // Find component centroid
+      // -------------------------
+
+      let rowSum = 0;
+      let colSum = 0;
+
+      for (const [cr, cc] of cells) {
+        rowSum += cr;
+        colSum += cc;
+      }
+
+      const centroidRow =
+        rowSum / cells.length;
+
+      const centroidCol =
+        colSum / cells.length;
+
+
+      // -------------------------
+      // Pick occupied cell
+      // nearest to centroid
+      // -------------------------
+
+      let labelCell = cells[0];
+      let bestDistance = Infinity;
+
+
+      for (const [cr, cc] of cells) {
+
+        const dr = cr - centroidRow;
+        const dc = cc - centroidCol;
+
+        const distance =
+          dr * dr +
+          dc * dc;
+
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          labelCell = [cr, cc];
+        }
+      }
+
+
+      labels.add(
+        cellKey(
+          labelCell[0],
+          labelCell[1]
+        )
+      );
     }
   }
 
-  return componentScores;
+
+  return {
+    scores,
+    labels,
+  };
 }
 
 
@@ -276,34 +469,56 @@ function computeComponentScores() {
 // =========================
 
 function computeLCC(player) {
-  const visited = Array.from({ length: N }, () => Array(N).fill(false));
+  const visited = Array.from(
+    { length: N },
+    () => Array(N).fill(false)
+  );
+
   const comps = [];
+
 
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-      if (visited[r][c]) continue;
 
-      const [own] = ownerAndValue(state.board[r][c]);
-      if (own !== player) continue;
+      if (visited[r][c]) {
+        continue;
+      }
+
+      const [own] =
+        ownerAndValue(state.board[r][c]);
+
+      if (own !== player) {
+        continue;
+      }
+
 
       const q = [[r, c]];
+
       visited[r][c] = true;
 
       let cells = [];
       let sum = 0;
+
 
       while (q.length) {
         const [cr, cc] = q.shift();
 
         cells.push([cr, cc]);
 
-        const [, val] = ownerAndValue(state.board[cr][cc]);
+        const [, val] =
+          ownerAndValue(state.board[cr][cc]);
+
         sum += val;
 
-        for (const [nr, nc] of neighbors4(cr, cc)) {
-          if (visited[nr][nc]) continue;
 
-          const [own2] = ownerAndValue(state.board[nr][nc]);
+        for (const [nr, nc] of neighbors4(cr, cc)) {
+
+          if (visited[nr][nc]) {
+            continue;
+          }
+
+          const [own2] =
+            ownerAndValue(state.board[nr][nc]);
 
           if (own2 === player) {
             visited[nr][nc] = true;
@@ -312,24 +527,43 @@ function computeLCC(player) {
         }
       }
 
-      comps.push({ size: cells.length, sum, cells });
+
+      comps.push({
+        size: cells.length,
+        sum,
+        cells,
+      });
     }
   }
 
+
   if (comps.length === 0) {
-    return { score: 0, highlight: new Set() };
+    return {
+      score: 0,
+      highlight: new Set(),
+    };
   }
 
+
   comps.sort((a, b) => {
-    if (b.size !== a.size) return b.size - a.size;
+
+    if (b.size !== a.size) {
+      return b.size - a.size;
+    }
+
     return b.sum - a.sum;
   });
 
+
   const best = comps[0];
 
+
   const highlight = new Set(
-    best.cells.map(([rr, cc]) => cellKey(rr, cc))
+    best.cells.map(
+      ([rr, cc]) => cellKey(rr, cc)
+    )
   );
+
 
   return {
     score: best.sum,
@@ -337,9 +571,15 @@ function computeLCC(player) {
   };
 }
 
+
+// =========================
+// FINALIZE GAME
+// =========================
+
 function finalize() {
   const blue = computeLCC("blue");
   const red = computeLCC("red");
+
 
   state.gameOver = true;
 
@@ -349,43 +589,90 @@ function finalize() {
   state.lcc.blue = blue.highlight;
   state.lcc.red = red.highlight;
 
-  elBlueScore.textContent = String(state.scores.blue);
-  elRedScore.textContent = String(state.scores.red);
+
+  elBlueScore.textContent =
+    String(state.scores.blue);
+
+  elRedScore.textContent =
+    String(state.scores.red);
+
 
   if (state.scores.blue > state.scores.red) {
-    elWinnerText.textContent = "Winner: Blue";
-  } else if (state.scores.red > state.scores.blue) {
-    elWinnerText.textContent = "Winner: Red";
+
+    elWinnerText.textContent =
+      "Winner: Blue";
+
+  } else if (
+    state.scores.red > state.scores.blue
+  ) {
+
+    elWinnerText.textContent =
+      "Winner: Red";
+
   } else {
-    elWinnerText.textContent = "Draw";
+
+    elWinnerText.textContent =
+      "Draw";
   }
+
 
   elResult.hidden = false;
 }
 
+
+// =========================
+// STATUS
+// =========================
+
 function updateStatus() {
-  const t = Math.min(state.turn + 1, TOTAL_MOVES);
-  elTurn.textContent = `Turn: ${t} / ${TOTAL_MOVES}`;
+  const t =
+    Math.min(
+      state.turn + 1,
+      TOTAL_MOVES
+    );
+
+
+  elTurn.textContent =
+    `Turn: ${t} / ${TOTAL_MOVES}`;
+
 
   const p = state.current;
-  elPlayer.textContent = `Current: ${p === "blue" ? "Blue" : "Red"}`;
 
-  const nb = state.nextVal.blue <= PIECES
-    ? VALUES[state.nextVal.blue - 1]
-    : "—";
+  elPlayer.textContent =
+    `Current: ${
+      p === "blue"
+        ? "Blue"
+        : "Red"
+    }`;
 
-  const nr = state.nextVal.red <= PIECES
-    ? VALUES[state.nextVal.red - 1]
-    : "—";
 
-  elNext.textContent = `Next piece — Blue: ${nb} · Red: ${nr}`;
+  const nb =
+    state.nextVal.blue <= PIECES
+      ? VALUES[state.nextVal.blue - 1]
+      : "—";
+
+
+  const nr =
+    state.nextVal.red <= PIECES
+      ? VALUES[state.nextVal.red - 1]
+      : "—";
+
+
+  elNext.textContent =
+    `Next piece — Blue: ${nb} · Red: ${nr}`;
+
 
   updateUndoBtn();
 }
 
+
 function updateUndoBtn() {
-  if (!elUndo) return;
-  elUndo.disabled = history.length <= 1;
+  if (!elUndo) {
+    return;
+  }
+
+  elUndo.disabled =
+    history.length <= 1;
 }
 
 
@@ -397,40 +684,74 @@ function renderTracker() {
   elBlueTracker.innerHTML = "";
   elRedTracker.innerHTML = "";
 
+
   for (let i = 0; i < PIECES; i++) {
+
     const val = VALUES[i];
 
-    const blueBox = document.createElement("div");
+
+    // -------------------------
+    // BLUE
+    // -------------------------
+
+    const blueBox =
+      document.createElement("div");
+
     blueBox.className = "piece-box";
     blueBox.textContent = val;
 
-    if (i < state.nextVal.blue - 1) {
+
+    if (
+      i < state.nextVal.blue - 1
+    ) {
+
       blueBox.classList.add("used");
+
     } else if (
       i === state.nextVal.blue - 1 &&
       state.current === "blue" &&
       !state.gameOver
     ) {
+
       blueBox.classList.add("current");
     }
 
-    elBlueTracker.appendChild(blueBox);
 
-    const redBox = document.createElement("div");
+    elBlueTracker.appendChild(
+      blueBox
+    );
+
+
+    // -------------------------
+    // RED
+    // -------------------------
+
+    const redBox =
+      document.createElement("div");
+
     redBox.className = "piece-box";
     redBox.textContent = val;
 
-    if (i < state.nextVal.red - 1) {
+
+    if (
+      i < state.nextVal.red - 1
+    ) {
+
       redBox.classList.add("used");
+
     } else if (
       i === state.nextVal.red - 1 &&
       state.current === "red" &&
       !state.gameOver
     ) {
+
       redBox.classList.add("current");
     }
 
-    elRedTracker.appendChild(redBox);
+
+    elRedTracker.appendChild(
+      redBox
+    );
   }
 }
 
@@ -442,74 +763,171 @@ function renderTracker() {
 function render() {
   elBoard.innerHTML = "";
 
-  // Compute all live component scores once for this board state.
-  const componentScores = computeComponentScores();
+
+  // Calculate live component information.
+  const componentInfo =
+    computeComponentInfo();
+
 
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-      const cell = document.createElement("div");
+
+      const cell =
+        document.createElement("div");
+
       cell.classList.add("cell");
+
 
       const v = state.board[r][c];
       const key = cellKey(r, c);
 
-      const inBlue = state.lcc.blue.has(key);
-      const inRed = state.lcc.red.has(key);
+
+      const inBlue =
+        state.lcc.blue.has(key);
+
+      const inRed =
+        state.lcc.red.has(key);
+
 
       if (inBlue || inRed) {
         cell.classList.add("lcc");
       }
 
+
+      // =====================
+      // EMPTY CELL
+      // =====================
+
       if (v === CellType.EMPTY) {
+
         cell.classList.add("empty");
         cell.textContent = "";
 
+
         if (!state.gameOver) {
-          cell.addEventListener("click", () => {
-            const ok = place(r, c);
 
-            if (ok) {
-              elResult.hidden = !state.gameOver;
+          cell.addEventListener(
+            "click",
+            () => {
+
+              const ok =
+                place(r, c);
+
+
+              if (ok) {
+                elResult.hidden =
+                  !state.gameOver;
+              }
+
+
+              updateStatus();
+              render();
             }
+          );
 
-            updateStatus();
-            render();
-          });
         } else {
-          cell.style.cursor = "default";
+
+          cell.style.cursor =
+            "default";
         }
 
-      } else if (v === CellType.BLOCKED) {
+
+      // =====================
+      // BLOCKED CELL
+      // =====================
+
+      } else if (
+        v === CellType.BLOCKED
+      ) {
+
         cell.classList.add("blocked");
         cell.textContent = "";
 
+
+      // =====================
+      // OCCUPIED CELL
+      // =====================
+
       } else {
-        const [own, val] = ownerAndValue(v);
-        const componentScore = componentScores.get(key);
+
+        const [own, val] =
+          ownerAndValue(v);
+
+
+        const componentScore =
+          componentInfo.scores.get(key);
+
+
+        const isLabelCell =
+          componentInfo.labels.has(key);
+
 
         cell.classList.add(own);
 
-        // Main number: this individual piece's value.
-        const pieceValue = document.createElement("span");
-        pieceValue.className = "piece-value";
-        pieceValue.textContent = String(val);
 
-        // Smaller number: total value of this piece's
-        // current connected component.
-        const componentValue = document.createElement("span");
-        componentValue.className = "component-score";
-        componentValue.textContent = `(${componentScore})`;
-        componentValue.title = `Connected component total: ${componentScore}`;
+        // ---------------------
+        // ORIGINAL PIECE VALUE
+        //
+        // Small number in the
+        // upper-right corner.
+        // ---------------------
 
-        cell.appendChild(pieceValue);
-        cell.appendChild(componentValue);
+        const pieceValue =
+          document.createElement("span");
 
-        cell.style.cursor = "default";
+        pieceValue.className =
+          "piece-value";
+
+        pieceValue.textContent =
+          String(val);
+
+        pieceValue.title =
+          `Original piece value: ${val}`;
+
+
+        cell.appendChild(
+          pieceValue
+        );
+
+
+        // ---------------------
+        // COMPONENT SUM
+        //
+        // Only ONE cell in each
+        // connected component
+        // displays this number.
+        // ---------------------
+
+        if (isLabelCell) {
+
+          const componentValue =
+            document.createElement("span");
+
+          componentValue.className =
+            "component-score";
+
+          componentValue.textContent =
+            String(componentScore);
+
+          componentValue.title =
+            `Connected component total: ${componentScore}`;
+
+
+          cell.appendChild(
+            componentValue
+          );
+        }
+
+
+        cell.style.cursor =
+          "default";
       }
+
 
       elBoard.appendChild(cell);
     }
   }
+
 
   renderTracker();
 }
@@ -520,10 +938,20 @@ function render() {
 // =========================
 
 function applyModeFromSelect() {
-  if (!elModeSelect) return;
+  if (!elModeSelect) {
+    return;
+  }
 
-  currentValueMode = elModeSelect.value;
-  VALUES = generateValues(currentValueMode, PIECES);
+
+  currentValueMode =
+    elModeSelect.value;
+
+
+  VALUES =
+    generateValues(
+      currentValueMode,
+      PIECES
+    );
 }
 
 
@@ -534,57 +962,118 @@ function applyModeFromSelect() {
 function newGame() {
   applyModeFromSelect();
 
+
   state = initState(true);
-  history = [snapshotState(state)];
+
+  history = [
+    snapshotState(state)
+  ];
+
 
   elResult.hidden = true;
+
 
   updateStatus();
   render();
 
-  console.log("VALUE MODE:", currentValueMode);
-  console.log("VALUES:", VALUES);
+
+  console.log(
+    "VALUE MODE:",
+    currentValueMode
+  );
+
+  console.log(
+    "VALUES:",
+    VALUES
+  );
 }
+
 
 function resetSameBlock() {
   applyModeFromSelect();
 
+
   state = initState(false);
-  history = [snapshotState(state)];
+
+  history = [
+    snapshotState(state)
+  ];
+
 
   elResult.hidden = true;
+
 
   updateStatus();
   render();
 
-  console.log("VALUE MODE:", currentValueMode);
-  console.log("VALUES:", VALUES);
+
+  console.log(
+    "VALUE MODE:",
+    currentValueMode
+  );
+
+  console.log(
+    "VALUES:",
+    VALUES
+  );
 }
 
+
 function undoOneStep() {
-  if (history.length <= 1) return;
+  if (history.length <= 1) {
+    return;
+  }
+
 
   history.pop();
 
-  const prev = history[history.length - 1];
+
+  const prev =
+    history[history.length - 1];
+
+
   restoreSnapshot(prev);
 
-  if (state.gameOver) {
-    elBlueScore.textContent = String(state.scores.blue);
-    elRedScore.textContent = String(state.scores.red);
 
-    if (state.scores.blue > state.scores.red) {
-      elWinnerText.textContent = "Winner: Blue";
-    } else if (state.scores.red > state.scores.blue) {
-      elWinnerText.textContent = "Winner: Red";
+  if (state.gameOver) {
+
+    elBlueScore.textContent =
+      String(state.scores.blue);
+
+    elRedScore.textContent =
+      String(state.scores.red);
+
+
+    if (
+      state.scores.blue >
+      state.scores.red
+    ) {
+
+      elWinnerText.textContent =
+        "Winner: Blue";
+
+    } else if (
+      state.scores.red >
+      state.scores.blue
+    ) {
+
+      elWinnerText.textContent =
+        "Winner: Red";
+
     } else {
-      elWinnerText.textContent = "Draw";
+
+      elWinnerText.textContent =
+        "Draw";
     }
 
+
     elResult.hidden = false;
+
   } else {
+
     elResult.hidden = true;
   }
+
 
   updateStatus();
   render();
@@ -595,19 +1084,39 @@ function undoOneStep() {
 // WIRE UP CONTROLS
 // =========================
 
-elNewGame.addEventListener("click", newGame);
-elReset.addEventListener("click", resetSameBlock);
+elNewGame.addEventListener(
+  "click",
+  newGame
+);
+
+
+elReset.addEventListener(
+  "click",
+  resetSameBlock
+);
+
 
 if (elUndo) {
-  elUndo.addEventListener("click", undoOneStep);
+
+  elUndo.addEventListener(
+    "click",
+    undoOneStep
+  );
 }
 
-if (elModeSelect) {
-  elModeSelect.value = DEFAULT_VALUE_MODE;
 
-  elModeSelect.addEventListener("change", () => {
-    newGame();
-  });
+if (elModeSelect) {
+
+  elModeSelect.value =
+    DEFAULT_VALUE_MODE;
+
+
+  elModeSelect.addEventListener(
+    "change",
+    () => {
+      newGame();
+    }
+  );
 }
 
 
