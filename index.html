@@ -18,6 +18,14 @@
 
         <div class="controls">
           <label class="mode-control">
+            <span class="mode-label">Play</span>
+            <select id="playModeSelect" class="mode-select">
+              <option value="computer" selected>Play vs Computer</option>
+              <option value="human">Two Players</option>
+            </select>
+          </label>
+
+          <label class="mode-control">
             <span class="mode-label">Mode</span>
             <select id="modeSelect" class="mode-select">
               <option value="linear">Linear</option>
@@ -83,6 +91,11 @@
         </aside>
 
         <section class="board-panel">
+          <div id="startHint" class="start-hint">
+            <span>Tap a cell to start</span>
+            <span class="start-hint-arrow">↓</span>
+          </div>
+
           <div id="board" class="board" aria-label="Reverse Chess board"></div>
         </section>
       </main>
@@ -111,6 +124,6 @@
       </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="js/app.js"></script>
   </body>
 </html>
