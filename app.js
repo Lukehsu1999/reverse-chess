@@ -10,7 +10,6 @@ const N = 5;
 const PIECES = 12;
 const TOTAL_MOVES = PIECES * 2;
 
-
 // =========================
 // VALUE SYSTEM
 // =========================
@@ -30,10 +29,7 @@ function generateValues(mode, n) {
     const fib = [1, 1];
 
     while (fib.length < n) {
-      fib.push(
-        fib[fib.length - 1] +
-        fib[fib.length - 2]
-      );
+      fib.push(fib[fib.length - 1] + fib[fib.length - 2]);
     }
 
     return fib.slice(0, n);
@@ -42,16 +38,13 @@ function generateValues(mode, n) {
   return Array.from({ length: n }, (_, i) => i + 1);
 }
 
-
 let currentValueMode = DEFAULT_VALUE_MODE;
 let VALUES = generateValues(currentValueMode, PIECES);
-
 
 const CellType = {
   EMPTY: 0,
   BLOCKED: "X",
 };
-
 
 // =========================
 // DOM
@@ -73,6 +66,18 @@ const elBlueScore = document.getElementById("blueScore");
 const elRedScore = document.getElementById("redScore");
 const elWinnerText = document.getElementById("winnerText");
 
+const elCurrentBlueScore =
+  document.getElementById("currentBlueScore");
+
+const elCurrentRedScore =
+  document.getElementById("currentRedScore");
+
+const elCurrentBlueSize =
+  document.getElementById("currentBlueSize");
+
+const elCurrentRedSize =
+  document.getElementById("currentRedSize");
+
 const elBlueTracker = document.getElementById("blueTracker");
 const elRedTracker = document.getElementById("redTracker");
 
@@ -80,15 +85,13 @@ const elRedTracker = document.getElementById("redTracker");
 let state = null;
 let history = [];
 
-
 // =========================
 // STATE HELPERS
 // =========================
 
 function cloneBoard(board) {
-  return board.map(row => row.slice());
+  return board.map((row) => row.slice());
 }
-
 
 function snapshotState(s) {
   return {
@@ -119,90 +122,61 @@ function snapshotState(s) {
   };
 }
 
-
 function restoreSnapshot(snap) {
-  currentValueMode =
-    snap.valueMode ?? DEFAULT_VALUE_MODE;
+  currentValueMode = snap.valueMode ?? DEFAULT_VALUE_MODE;
 
-  VALUES =
-    generateValues(
-      currentValueMode,
-      PIECES
-    );
-
+  VALUES = generateValues(currentValueMode, PIECES);
 
   if (elModeSelect) {
-    elModeSelect.value =
-      currentValueMode;
+    elModeSelect.value = currentValueMode;
   }
 
-
   state = {
-    board:
-      cloneBoard(snap.board),
+    board: cloneBoard(snap.board),
 
-    blockedIndex:
-      snap.blockedIndex,
+    blockedIndex: snap.blockedIndex,
 
-    turn:
-      snap.turn,
+    turn: snap.turn,
 
-    current:
-      snap.current,
+    current: snap.current,
 
     nextVal: {
-      blue:
-        snap.nextVal.blue,
+      blue: snap.nextVal.blue,
 
-      red:
-        snap.nextVal.red,
+      red: snap.nextVal.red,
     },
 
-    gameOver:
-      snap.gameOver,
+    gameOver: snap.gameOver,
 
     scores: {
-      blue:
-        snap.scores.blue,
+      blue: snap.scores.blue,
 
-      red:
-        snap.scores.red,
+      red: snap.scores.red,
     },
 
     lcc: {
-      blue:
-        new Set(snap.lcc.blue),
+      blue: new Set(snap.lcc.blue),
 
-      red:
-        new Set(snap.lcc.red),
+      red: new Set(snap.lcc.red),
     },
   };
 }
-
 
 // =========================
 // BOARD HELPERS
 // =========================
 
 function randInt(max) {
-  return Math.floor(
-    Math.random() * max
-  );
+  return Math.floor(Math.random() * max);
 }
-
 
 function idx(r, c) {
   return r * N + c;
 }
 
-
 function rc(i) {
-  return [
-    Math.floor(i / N),
-    i % N,
-  ];
+  return [Math.floor(i / N), i % N];
 }
-
 
 function neighbors4(r, c) {
   const out = [];
@@ -226,17 +200,12 @@ function neighbors4(r, c) {
   return out;
 }
 
-
 function cellKey(r, c) {
   return `${r},${c}`;
 }
 
-
 function ownerAndValue(cell) {
-  if (
-    cell === CellType.EMPTY ||
-    cell === CellType.BLOCKED
-  ) {
+  if (cell === CellType.EMPTY || cell === CellType.BLOCKED) {
     return [null, null];
   }
 
@@ -247,42 +216,22 @@ function ownerAndValue(cell) {
   return ["red", -cell];
 }
 
-
 // =========================
 // INITIAL STATE
 // =========================
 
 function initState(randomBlock = true) {
-  let blockedIndex =
-    state?.blockedIndex ?? null;
+  let blockedIndex = state?.blockedIndex ?? null;
 
-
-  if (
-    randomBlock ||
-    blockedIndex === null
-  ) {
-    blockedIndex =
-      randInt(N * N);
+  if (randomBlock || blockedIndex === null) {
+    blockedIndex = randInt(N * N);
   }
 
+  const board = Array.from({ length: N }, () => Array(N).fill(CellType.EMPTY));
 
-  const board =
-    Array.from(
-      { length: N },
-      () =>
-        Array(N).fill(
-          CellType.EMPTY
-        )
-    );
+  const [br, bc] = rc(blockedIndex);
 
-
-  const [br, bc] =
-    rc(blockedIndex);
-
-
-  board[br][bc] =
-    CellType.BLOCKED;
-
+  board[br][bc] = CellType.BLOCKED;
 
   return {
     board,
@@ -310,7 +259,6 @@ function initState(randomBlock = true) {
   };
 }
 
-
 // =========================
 // PLACEMENT
 // =========================
@@ -320,67 +268,40 @@ function place(r, c) {
     return false;
   }
 
-
-  const cell =
-    state.board[r][c];
-
+  const cell = state.board[r][c];
 
   if (cell !== CellType.EMPTY) {
     return false;
   }
 
+  const p = state.current;
 
-  const p =
-    state.current;
-
-
-  const index =
-    state.nextVal[p] - 1;
-
+  const index = state.nextVal[p] - 1;
 
   if (index >= PIECES) {
     return false;
   }
 
+  const v = VALUES[index];
 
-  const v =
-    VALUES[index];
-
-
-  state.board[r][c] =
-    (p === "blue")
-      ? v
-      : -v;
-
+  state.board[r][c] = p === "blue" ? v : -v;
 
   state.turn += 1;
 
   state.nextVal[p] += 1;
 
+  state.current = p === "blue" ? "red" : "blue";
 
-  state.current =
-    (p === "blue")
-      ? "red"
-      : "blue";
-
-
-  if (
-    state.turn >= TOTAL_MOVES
-  ) {
+  if (state.turn >= TOTAL_MOVES) {
     finalize();
   }
 
-
   if (history.length) {
-    history.push(
-      snapshotState(state)
-    );
+    history.push(snapshotState(state));
   }
-
 
   return true;
 }
-
 
 // =========================
 // COMPONENT INFORMATION
@@ -405,119 +326,63 @@ function computeComponentInfo() {
   const scores = new Map();
   const labels = new Set();
 
-
-  const visited =
-    Array.from(
-      { length: N },
-      () =>
-        Array(N).fill(false)
-    );
-
+  const visited = Array.from({ length: N }, () => Array(N).fill(false));
 
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-
       if (visited[r][c]) {
         continue;
       }
 
-
-      const [player] =
-        ownerAndValue(
-          state.board[r][c]
-        );
-
+      const [player] = ownerAndValue(state.board[r][c]);
 
       if (player === null) {
         continue;
       }
 
-
-      const queue =
-        [[r, c]];
-
+      const queue = [[r, c]];
 
       const cells = [];
 
-
       let sum = 0;
 
-
       visited[r][c] = true;
-
 
       // -------------------------
       // FIND COMPONENT
       // -------------------------
 
       while (queue.length) {
-        const [cr, cc] =
-          queue.shift();
+        const [cr, cc] = queue.shift();
 
+        cells.push([cr, cc]);
 
-        cells.push(
-          [cr, cc]
-        );
-
-
-        const [, value] =
-          ownerAndValue(
-            state.board[cr][cc]
-          );
-
+        const [, value] = ownerAndValue(state.board[cr][cc]);
 
         sum += value;
 
-
-        for (
-          const [nr, nc]
-          of neighbors4(cr, cc)
-        ) {
-
-          if (
-            visited[nr][nc]
-          ) {
+        for (const [nr, nc] of neighbors4(cr, cc)) {
+          if (visited[nr][nc]) {
             continue;
           }
 
+          const [neighborPlayer] = ownerAndValue(state.board[nr][nc]);
 
-          const [neighborPlayer] =
-            ownerAndValue(
-              state.board[nr][nc]
-            );
+          if (neighborPlayer === player) {
+            visited[nr][nc] = true;
 
-
-          if (
-            neighborPlayer === player
-          ) {
-
-            visited[nr][nc] =
-              true;
-
-
-            queue.push(
-              [nr, nc]
-            );
+            queue.push([nr, nc]);
           }
         }
       }
-
 
       // -------------------------
       // STORE COMPONENT TOTAL
       // -------------------------
 
-      for (
-        const [cr, cc]
-        of cells
-      ) {
-
-        scores.set(
-          cellKey(cr, cc),
-          sum
-        );
+      for (const [cr, cc] of cells) {
+        scores.set(cellKey(cr, cc), sum);
       }
-
 
       // -------------------------
       // COMPONENT CENTROID
@@ -526,86 +391,46 @@ function computeComponentInfo() {
       let rowSum = 0;
       let colSum = 0;
 
-
-      for (
-        const [cr, cc]
-        of cells
-      ) {
-
+      for (const [cr, cc] of cells) {
         rowSum += cr;
         colSum += cc;
       }
 
+      const centroidRow = rowSum / cells.length;
 
-      const centroidRow =
-        rowSum / cells.length;
-
-
-      const centroidCol =
-        colSum / cells.length;
-
+      const centroidCol = colSum / cells.length;
 
       // -------------------------
       // CLOSEST OCCUPIED CELL
       // -------------------------
 
-      let labelCell =
-        cells[0];
+      let labelCell = cells[0];
 
+      let bestDistance = Infinity;
 
-      let bestDistance =
-        Infinity;
+      for (const [cr, cc] of cells) {
+        const dr = cr - centroidRow;
 
+        const dc = cc - centroidCol;
 
-      for (
-        const [cr, cc]
-        of cells
-      ) {
+        const distance = dr * dr + dc * dc;
 
-        const dr =
-          cr - centroidRow;
+        if (distance < bestDistance) {
+          bestDistance = distance;
 
-
-        const dc =
-          cc - centroidCol;
-
-
-        const distance =
-          dr * dr +
-          dc * dc;
-
-
-        if (
-          distance <
-          bestDistance
-        ) {
-
-          bestDistance =
-            distance;
-
-
-          labelCell =
-            [cr, cc];
+          labelCell = [cr, cc];
         }
       }
 
-
-      labels.add(
-        cellKey(
-          labelCell[0],
-          labelCell[1]
-        )
-      );
+      labels.add(cellKey(labelCell[0], labelCell[1]));
     }
   }
-
 
   return {
     scores,
     labels,
   };
 }
-
 
 // =========================
 // CONNECTION HELPERS
@@ -636,138 +461,71 @@ function computeComponentInfo() {
 //
 
 function sameOwner(r1, c1, r2, c2) {
-  if (
-    r2 < 0 ||
-    r2 >= N ||
-    c2 < 0 ||
-    c2 >= N
-  ) {
+  if (r2 < 0 || r2 >= N || c2 < 0 || c2 >= N) {
     return false;
   }
 
+  const [owner1] = ownerAndValue(state.board[r1][c1]);
 
-  const [owner1] =
-    ownerAndValue(
-      state.board[r1][c1]
-    );
+  const [owner2] = ownerAndValue(state.board[r2][c2]);
 
-
-  const [owner2] =
-    ownerAndValue(
-      state.board[r2][c2]
-    );
-
-
-  return (
-    owner1 !== null &&
-    owner1 === owner2
-  );
+  return owner1 !== null && owner1 === owner2;
 }
-
 
 // =========================
 // FINAL LCC
 // =========================
 
 function computeLCC(player) {
-  const visited =
-    Array.from(
-      { length: N },
-      () =>
-        Array(N).fill(false)
-    );
-
+  const visited = Array.from({ length: N }, () => Array(N).fill(false));
 
   const comps = [];
 
-
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-
       if (visited[r][c]) {
         continue;
       }
 
-
-      const [own] =
-        ownerAndValue(
-          state.board[r][c]
-        );
-
+      const [own] = ownerAndValue(state.board[r][c]);
 
       if (own !== player) {
         continue;
       }
 
+      const q = [[r, c]];
 
-      const q =
-        [[r, c]];
-
-
-      visited[r][c] =
-        true;
-
+      visited[r][c] = true;
 
       let cells = [];
       let sum = 0;
 
-
       while (q.length) {
-        const [cr, cc] =
-          q.shift();
+        const [cr, cc] = q.shift();
 
+        cells.push([cr, cc]);
 
-        cells.push(
-          [cr, cc]
-        );
-
-
-        const [, val] =
-          ownerAndValue(
-            state.board[cr][cc]
-          );
-
+        const [, val] = ownerAndValue(state.board[cr][cc]);
 
         sum += val;
 
-
-        for (
-          const [nr, nc]
-          of neighbors4(cr, cc)
-        ) {
-
-          if (
-            visited[nr][nc]
-          ) {
+        for (const [nr, nc] of neighbors4(cr, cc)) {
+          if (visited[nr][nc]) {
             continue;
           }
 
+          const [own2] = ownerAndValue(state.board[nr][nc]);
 
-          const [own2] =
-            ownerAndValue(
-              state.board[nr][nc]
-            );
+          if (own2 === player) {
+            visited[nr][nc] = true;
 
-
-          if (
-            own2 === player
-          ) {
-
-            visited[nr][nc] =
-              true;
-
-
-            q.push(
-              [nr, nc]
-            );
+            q.push([nr, nc]);
           }
         }
       }
 
-
       comps.push({
-        size:
-          cells.length,
+        size: cells.length,
 
         sum,
         cells,
@@ -775,308 +533,151 @@ function computeLCC(player) {
     }
   }
 
-
-  if (
-    comps.length === 0
-  ) {
-
+  if (comps.length === 0) {
     return {
       score: 0,
-      highlight:
-        new Set(),
+      size: 0,
+      highlight: new Set(),
     };
   }
 
-
-  comps.sort(
-    (a, b) => {
-
-      if (
-        b.size !== a.size
-      ) {
-        return (
-          b.size - a.size
-        );
-      }
-
-
-      return (
-        b.sum - a.sum
-      );
+  comps.sort((a, b) => {
+    if (b.size !== a.size) {
+      return b.size - a.size;
     }
-  );
 
+    return b.sum - a.sum;
+  });
 
-  const best =
-    comps[0];
+  const best = comps[0];
 
-
-  const highlight =
-    new Set(
-      best.cells.map(
-        ([rr, cc]) =>
-          cellKey(rr, cc)
-      )
-    );
-
+  const highlight = new Set(best.cells.map(([rr, cc]) => cellKey(rr, cc)));
 
   return {
-    score:
-      best.sum,
-
+    score: best.sum,
+    size: best.size,
     highlight,
   };
 }
-
 
 // =========================
 // FINALIZE
 // =========================
 
 function finalize() {
-  const blue =
-    computeLCC("blue");
+  const blue = computeLCC("blue");
 
+  const red = computeLCC("red");
 
-  const red =
-    computeLCC("red");
+  state.gameOver = true;
 
+  state.scores.blue = blue.score;
 
-  state.gameOver =
-    true;
+  state.scores.red = red.score;
 
+  state.lcc.blue = blue.highlight;
 
-  state.scores.blue =
-    blue.score;
+  state.lcc.red = red.highlight;
 
+  elBlueScore.textContent = String(state.scores.blue);
 
-  state.scores.red =
-    red.score;
+  elRedScore.textContent = String(state.scores.red);
 
-
-  state.lcc.blue =
-    blue.highlight;
-
-
-  state.lcc.red =
-    red.highlight;
-
-
-  elBlueScore.textContent =
-    String(
-      state.scores.blue
-    );
-
-
-  elRedScore.textContent =
-    String(
-      state.scores.red
-    );
-
-
-  if (
-    state.scores.blue >
-    state.scores.red
-  ) {
-
-    elWinnerText.textContent =
-      "Winner: Blue";
-
-  } else if (
-    state.scores.red >
-    state.scores.blue
-  ) {
-
-    elWinnerText.textContent =
-      "Winner: Red";
-
+  if (state.scores.blue > state.scores.red) {
+    elWinnerText.textContent = "Winner: Blue";
+  } else if (state.scores.red > state.scores.blue) {
+    elWinnerText.textContent = "Winner: Red";
   } else {
-
-    elWinnerText.textContent =
-      "Draw";
+    elWinnerText.textContent = "Draw";
   }
 
-
-  elResult.hidden =
-    false;
+  elResult.hidden = false;
 }
-
 
 // =========================
 // STATUS
 // =========================
 
 function updateStatus() {
-  const t =
-    Math.min(
-      state.turn + 1,
-      TOTAL_MOVES
-    );
+  const t = Math.min(state.turn + 1, TOTAL_MOVES);
 
+  elTurn.textContent = `Turn: ${t} / ${TOTAL_MOVES}`;
 
-  elTurn.textContent =
-    `Turn: ${t} / ${TOTAL_MOVES}`;
+  const p = state.current;
 
-
-  const p =
-    state.current;
-
-
-  elPlayer.textContent =
-    `Current: ${
-      p === "blue"
-        ? "Blue"
-        : "Red"
-    }`;
-
+  elPlayer.textContent = `Current: ${p === "blue" ? "Blue" : "Red"}`;
 
   const nb =
-    state.nextVal.blue <= PIECES
-      ? VALUES[
-          state.nextVal.blue - 1
-        ]
-      : "—";
+    state.nextVal.blue <= PIECES ? VALUES[state.nextVal.blue - 1] : "—";
 
+  const nr = state.nextVal.red <= PIECES ? VALUES[state.nextVal.red - 1] : "—";
 
-  const nr =
-    state.nextVal.red <= PIECES
-      ? VALUES[
-          state.nextVal.red - 1
-        ]
-      : "—";
-
-
-  elNext.textContent =
-    `Next piece — Blue: ${nb} · Red: ${nr}`;
-
+  elNext.textContent = `Next piece — Blue: ${nb} · Red: ${nr}`;
 
   updateUndoBtn();
 }
-
 
 function updateUndoBtn() {
   if (!elUndo) {
     return;
   }
 
-
-  elUndo.disabled =
-    history.length <= 1;
+  elUndo.disabled = history.length <= 1;
 }
-
 
 // =========================
 // PIECE TRACKER
 // =========================
 
 function renderTracker() {
-  elBlueTracker.innerHTML =
-    "";
+  elBlueTracker.innerHTML = "";
 
+  elRedTracker.innerHTML = "";
 
-  elRedTracker.innerHTML =
-    "";
-
-
-  for (
-    let i = 0;
-    i < PIECES;
-    i++
-  ) {
-
-    const val =
-      VALUES[i];
-
+  for (let i = 0; i < PIECES; i++) {
+    const val = VALUES[i];
 
     // BLUE
 
-    const blueBox =
-      document.createElement(
-        "div"
-      );
+    const blueBox = document.createElement("div");
 
+    blueBox.className = "piece-box";
 
-    blueBox.className =
-      "piece-box";
+    blueBox.textContent = val;
 
-
-    blueBox.textContent =
-      val;
-
-
-    if (
-      i <
-      state.nextVal.blue - 1
-    ) {
-
-      blueBox.classList.add(
-        "used"
-      );
-
+    if (i < state.nextVal.blue - 1) {
+      blueBox.classList.add("used");
     } else if (
-      i ===
-        state.nextVal.blue - 1 &&
-      state.current ===
-        "blue" &&
+      i === state.nextVal.blue - 1 &&
+      state.current === "blue" &&
       !state.gameOver
     ) {
-
-      blueBox.classList.add(
-        "current"
-      );
+      blueBox.classList.add("current");
     }
 
-
-    elBlueTracker.appendChild(
-      blueBox
-    );
-
+    elBlueTracker.appendChild(blueBox);
 
     // RED
 
-    const redBox =
-      document.createElement(
-        "div"
-      );
+    const redBox = document.createElement("div");
 
+    redBox.className = "piece-box";
 
-    redBox.className =
-      "piece-box";
+    redBox.textContent = val;
 
-
-    redBox.textContent =
-      val;
-
-
-    if (
-      i <
-      state.nextVal.red - 1
-    ) {
-
-      redBox.classList.add(
-        "used"
-      );
-
+    if (i < state.nextVal.red - 1) {
+      redBox.classList.add("used");
     } else if (
-      i ===
-        state.nextVal.red - 1 &&
-      state.current ===
-        "red" &&
+      i === state.nextVal.red - 1 &&
+      state.current === "red" &&
       !state.gameOver
     ) {
-
-      redBox.classList.add(
-        "current"
-      );
+      redBox.classList.add("current");
     }
 
-
-    elRedTracker.appendChild(
-      redBox
-    );
+    elRedTracker.appendChild(redBox);
   }
 }
-
 
 // =========================
 // BOARD RENDERING
@@ -1085,144 +686,69 @@ function renderTracker() {
 function render() {
   elBoard.innerHTML = "";
 
-
-  const componentInfo =
-    computeComponentInfo();
-
+  const componentInfo = computeComponentInfo();
 
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
+      const cell = document.createElement("div");
 
-      const cell =
-        document.createElement(
-          "div"
-        );
+      cell.classList.add("cell");
 
+      const v = state.board[r][c];
 
-      cell.classList.add(
-        "cell"
-      );
+      const key = cellKey(r, c);
 
+      const inBlue = state.lcc.blue.has(key);
 
-      const v =
-        state.board[r][c];
+      const inRed = state.lcc.red.has(key);
 
-
-      const key =
-        cellKey(r, c);
-
-
-      const inBlue =
-        state.lcc.blue.has(key);
-
-
-      const inRed =
-        state.lcc.red.has(key);
-
-
-      if (
-        inBlue ||
-        inRed
-      ) {
-
-        cell.classList.add(
-          "lcc"
-        );
+      if (inBlue || inRed) {
+        cell.classList.add("lcc");
       }
-
 
       // =====================
       // EMPTY
       // =====================
 
-      if (
-        v === CellType.EMPTY
-      ) {
+      if (v === CellType.EMPTY) {
+        cell.classList.add("empty");
 
-        cell.classList.add(
-          "empty"
-        );
+        cell.textContent = "";
 
+        if (!state.gameOver) {
+          cell.addEventListener("click", () => {
+            const ok = place(r, c);
 
-        cell.textContent =
-          "";
-
-
-        if (
-          !state.gameOver
-        ) {
-
-          cell.addEventListener(
-            "click",
-            () => {
-
-              const ok =
-                place(r, c);
-
-
-              if (ok) {
-
-                elResult.hidden =
-                  !state.gameOver;
-              }
-
-
-              updateStatus();
-              render();
+            if (ok) {
+              elResult.hidden = !state.gameOver;
             }
-          );
 
+            updateStatus();
+            render();
+          });
         } else {
-
-          cell.style.cursor =
-            "default";
+          cell.style.cursor = "default";
         }
 
+        // =====================
+        // BLOCKED
+        // =====================
+      } else if (v === CellType.BLOCKED) {
+        cell.classList.add("blocked");
 
-      // =====================
-      // BLOCKED
-      // =====================
+        cell.textContent = "";
 
-      } else if (
-        v ===
-        CellType.BLOCKED
-      ) {
-
-        cell.classList.add(
-          "blocked"
-        );
-
-
-        cell.textContent =
-          "";
-
-
-      // =====================
-      // OCCUPIED
-      // =====================
-
+        // =====================
+        // OCCUPIED
+        // =====================
       } else {
+        const [own, val] = ownerAndValue(v);
 
-        const [own, val] =
-          ownerAndValue(v);
+        const componentScore = componentInfo.scores.get(key);
 
+        const isLabelCell = componentInfo.labels.has(key);
 
-        const componentScore =
-          componentInfo.scores.get(
-            key
-          );
-
-
-        const isLabelCell =
-          componentInfo.labels.has(
-            key
-          );
-
-
-        cell.classList.add(
-          own
-        );
-
+        cell.classList.add(own);
 
         // ---------------------
         // CONNECTIONS
@@ -1234,20 +760,9 @@ function render() {
         // [cell] === [cell]
         //
 
-        if (
-          sameOwner(
-            r,
-            c,
-            r,
-            c + 1
-          )
-        ) {
-
-          cell.classList.add(
-            "connect-right"
-          );
+        if (sameOwner(r, c, r, c + 1)) {
+          cell.classList.add("connect-right");
         }
-
 
         // Same-owner neighbor
         // BELOW:
@@ -1257,95 +772,50 @@ function render() {
         // [cell]
         //
 
-        if (
-          sameOwner(
-            r,
-            c,
-            r + 1,
-            c
-          )
-        ) {
-
-          cell.classList.add(
-            "connect-down"
-          );
+        if (sameOwner(r, c, r + 1, c)) {
+          cell.classList.add("connect-down");
         }
-
 
         // ---------------------
         // ORIGINAL PIECE VALUE
         // ---------------------
 
-        const pieceValue =
-          document.createElement(
-            "span"
-          );
+        const pieceValue = document.createElement("span");
 
+        pieceValue.className = "piece-value";
 
-        pieceValue.className =
-          "piece-value";
+        pieceValue.textContent = String(val);
 
+        pieceValue.title = `Original piece value: ${val}`;
 
-        pieceValue.textContent =
-          String(val);
-
-
-        pieceValue.title =
-          `Original piece value: ${val}`;
-
-
-        cell.appendChild(
-          pieceValue
-        );
-
+        cell.appendChild(pieceValue);
 
         // ---------------------
         // COMPONENT SCORE
         // ---------------------
 
         if (isLabelCell) {
+          const componentValue = document.createElement("span");
 
-          const componentValue =
-            document.createElement(
-              "span"
-            );
+          componentValue.className = "component-score";
 
+          componentValue.textContent = String(componentScore);
 
-          componentValue.className =
-            "component-score";
+          componentValue.title = `Connected component total: ${componentScore}`;
 
-
-          componentValue.textContent =
-            String(
-              componentScore
-            );
-
-
-          componentValue.title =
-            `Connected component total: ${componentScore}`;
-
-
-          cell.appendChild(
-            componentValue
-          );
+          cell.appendChild(componentValue);
         }
 
-
-        cell.style.cursor =
-          "default";
+        cell.style.cursor = "default";
       }
 
-
-      elBoard.appendChild(
-        cell
-      );
+      elBoard.appendChild(cell);
     }
   }
 
-
   renderTracker();
+  updateCurrentScores();
 }
-
 
 // =========================
 // VALUE MODE
@@ -1356,18 +826,10 @@ function applyModeFromSelect() {
     return;
   }
 
+  currentValueMode = elModeSelect.value;
 
-  currentValueMode =
-    elModeSelect.value;
-
-
-  VALUES =
-    generateValues(
-      currentValueMode,
-      PIECES
-    );
+  VALUES = generateValues(currentValueMode, PIECES);
 }
-
 
 // =========================
 // GAME CONTROLS
@@ -1376,182 +838,106 @@ function applyModeFromSelect() {
 function newGame() {
   applyModeFromSelect();
 
+  state = initState(true);
 
-  state =
-    initState(true);
+  history = [snapshotState(state)];
 
-
-  history = [
-    snapshotState(state)
-  ];
-
-
-  elResult.hidden =
-    true;
-
+  elResult.hidden = true;
 
   updateStatus();
   render();
 
+  console.log("VALUE MODE:", currentValueMode);
 
-  console.log(
-    "VALUE MODE:",
-    currentValueMode
-  );
-
-
-  console.log(
-    "VALUES:",
-    VALUES
-  );
+  console.log("VALUES:", VALUES);
 }
-
 
 function resetSameBlock() {
   applyModeFromSelect();
 
+  state = initState(false);
 
-  state =
-    initState(false);
+  history = [snapshotState(state)];
 
-
-  history = [
-    snapshotState(state)
-  ];
-
-
-  elResult.hidden =
-    true;
-
+  elResult.hidden = true;
 
   updateStatus();
   render();
 
+  console.log("VALUE MODE:", currentValueMode);
 
-  console.log(
-    "VALUE MODE:",
-    currentValueMode
-  );
-
-
-  console.log(
-    "VALUES:",
-    VALUES
-  );
+  console.log("VALUES:", VALUES);
 }
 
-
 function undoOneStep() {
-  if (
-    history.length <= 1
-  ) {
+  if (history.length <= 1) {
     return;
   }
 
-
   history.pop();
 
-
-  const prev =
-    history[
-      history.length - 1
-    ];
-
+  const prev = history[history.length - 1];
 
   restoreSnapshot(prev);
 
-
   if (state.gameOver) {
+    elBlueScore.textContent = String(state.scores.blue);
 
-    elBlueScore.textContent =
-      String(
-        state.scores.blue
-      );
+    elRedScore.textContent = String(state.scores.red);
 
-
-    elRedScore.textContent =
-      String(
-        state.scores.red
-      );
-
-
-    if (
-      state.scores.blue >
-      state.scores.red
-    ) {
-
-      elWinnerText.textContent =
-        "Winner: Blue";
-
-    } else if (
-      state.scores.red >
-      state.scores.blue
-    ) {
-
-      elWinnerText.textContent =
-        "Winner: Red";
-
+    if (state.scores.blue > state.scores.red) {
+      elWinnerText.textContent = "Winner: Blue";
+    } else if (state.scores.red > state.scores.blue) {
+      elWinnerText.textContent = "Winner: Red";
     } else {
-
-      elWinnerText.textContent =
-        "Draw";
+      elWinnerText.textContent = "Draw";
     }
 
-
-    elResult.hidden =
-      false;
-
+    elResult.hidden = false;
   } else {
-
-    elResult.hidden =
-      true;
+    elResult.hidden = true;
   }
-
 
   updateStatus();
   render();
 }
 
+function updateCurrentScores() {
+  const blue = computeLCC("blue");
+  const red = computeLCC("red");
+
+  elCurrentBlueScore.textContent =
+    String(blue.score);
+
+  elCurrentRedScore.textContent =
+    String(red.score);
+
+  elCurrentBlueSize.textContent =
+    `${blue.size} ${blue.size === 1 ? "piece" : "pieces"}`;
+
+  elCurrentRedSize.textContent =
+    `${red.size} ${red.size === 1 ? "piece" : "pieces"}`;
+}
 
 // =========================
 // WIRE CONTROLS
 // =========================
 
-elNewGame.addEventListener(
-  "click",
-  newGame
-);
+elNewGame.addEventListener("click", newGame);
 
-
-elReset.addEventListener(
-  "click",
-  resetSameBlock
-);
-
+elReset.addEventListener("click", resetSameBlock);
 
 if (elUndo) {
-
-  elUndo.addEventListener(
-    "click",
-    undoOneStep
-  );
+  elUndo.addEventListener("click", undoOneStep);
 }
-
 
 if (elModeSelect) {
+  elModeSelect.value = DEFAULT_VALUE_MODE;
 
-  elModeSelect.value =
-    DEFAULT_VALUE_MODE;
-
-
-  elModeSelect.addEventListener(
-    "change",
-    () => {
-      newGame();
-    }
-  );
+  elModeSelect.addEventListener("change", () => {
+    newGame();
+  });
 }
-
 
 // =========================
 // START

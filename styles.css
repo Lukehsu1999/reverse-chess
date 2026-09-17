@@ -1,4 +1,4 @@
-:root{
+:root {
   --tile: 72px;
   --gap: 8px;
 
@@ -18,22 +18,21 @@
   --red: #ef4444;
 
   --gold: #f59e0b;
-  --border: rgba(255,255,255,0.12);
+  --border: rgba(255, 255, 255, 0.12);
 }
 
-*{
+* {
   box-sizing: border-box;
 }
 
-body{
+body {
   margin: 0;
 
-  background:
-    radial-gradient(
-      1200px 600px at 50% 0%,
-      #0f172a 0%,
-      var(--bg) 55%
-    );
+  background: radial-gradient(
+    1200px 600px at 50% 0%,
+    #0f172a 0%,
+    var(--bg) 55%
+  );
 
   color: var(--text);
 
@@ -47,33 +46,30 @@ body{
     Arial;
 }
 
-.app{
+.app {
   max-width: 1180px;
   margin: 0 auto;
 
-  padding:
-    24px 20px 36px;
+  padding: 24px 20px 36px;
 }
 
-.header{
+.header {
   display: flex;
 
-  justify-content:
-    space-between;
+  justify-content: space-between;
 
-  align-items:
-    flex-start;
+  align-items: flex-start;
 
   gap: 24px;
 
   margin-bottom: 24px;
 }
 
-.title-group{
+.title-group {
   max-width: 640px;
 }
 
-h1{
+h1 {
   margin: 0;
 
   font-size: 36px;
@@ -81,7 +77,7 @@ h1{
   letter-spacing: 0.2px;
 }
 
-.sub{
+.sub {
   margin-top: 8px;
 
   color: var(--muted);
@@ -91,24 +87,22 @@ h1{
   line-height: 1.45;
 }
 
-.controls{
+.controls {
   display: flex;
 
   gap: 10px;
 
   flex-wrap: wrap;
 
-  justify-content:
-    flex-end;
+  justify-content: flex-end;
 }
 
-.btn{
+.btn {
   background: #1f2937;
 
   color: var(--text);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
   border-radius: 12px;
 
@@ -119,47 +113,41 @@ h1{
   cursor: pointer;
 }
 
-.btn:hover{
-  filter:
-    brightness(1.1);
+.btn:hover {
+  filter: brightness(1.1);
 }
 
-.btn:active{
-  transform:
-    translateY(1px);
+.btn:active {
+  transform: translateY(1px);
 }
 
-.btn.btn-secondary{
-  background:
-    #0f172a;
+.btn.btn-secondary {
+  background: #0f172a;
 }
 
-.btn:disabled{
+.btn:disabled {
   opacity: 0.5;
 
-  cursor:
-    not-allowed;
+  cursor: not-allowed;
 
   filter: none;
 }
-
 
 /* =========================
    GAME LAYOUT
    ========================= */
 
-.game-layout{
+.game-layout {
   display: grid;
 
-  grid-template-columns:
-    340px 1fr;
+  grid-template-columns: 340px 1fr;
 
   gap: 28px;
 
   align-items: start;
 }
 
-.side-panel{
+.side-panel {
   display: flex;
 
   flex-direction: column;
@@ -169,35 +157,31 @@ h1{
 
 .info-card,
 .board-panel,
-.result{
-  background:
-    rgba(255,255,255,0.05);
+.result {
+  background: rgba(255, 255, 255, 0.05);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
   border-radius: 18px;
 
   padding: 16px;
 }
 
-.section-title{
+.section-title {
   font-size: 12px;
 
   font-weight: 800;
 
   color: var(--muted);
 
-  text-transform:
-    uppercase;
+  text-transform: uppercase;
 
-  letter-spacing:
-    0.06em;
+  letter-spacing: 0.06em;
 
   margin-bottom: 10px;
 }
 
-.rules{
+.rules {
   color: #dbe4f0;
 
   font-size: 14px;
@@ -205,7 +189,7 @@ h1{
   line-height: 1.55;
 }
 
-.status{
+.status {
   display: flex;
 
   flex-direction: column;
@@ -213,12 +197,10 @@ h1{
   gap: 10px;
 }
 
-.pill{
-  background:
-    rgba(255,255,255,0.06);
+.pill {
+  background: rgba(255, 255, 255, 0.06);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
   border-radius: 999px;
 
@@ -233,7 +215,7 @@ h1{
   max-width: 100%;
 }
 
-.board-panel{
+.board-panel {
   display: flex;
 
   justify-content: center;
@@ -245,39 +227,33 @@ h1{
   padding: 20px;
 }
 
-
 /* =========================
    BOARD
    ========================= */
 
-.board{
+.board {
   display: grid;
 
-  grid-template-columns:
-    repeat(5, var(--tile));
+  grid-template-columns: repeat(5, var(--tile));
 
-  grid-template-rows:
-    repeat(5, var(--tile));
+  grid-template-rows: repeat(5, var(--tile));
 
   gap: var(--gap);
 
   padding: 14px;
 
-  background:
-    rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
   border-radius: 18px;
 }
-
 
 /* =========================
    BOARD CELLS
    ========================= */
 
-.cell{
+.cell {
   /*
    * Important:
    *
@@ -294,8 +270,7 @@ h1{
 
   border-radius: 14px;
 
-  border:
-    1px solid rgba(0,0,0,0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
 
   display: flex;
 
@@ -317,54 +292,41 @@ h1{
   z-index: 1;
 }
 
-.cell:hover{
-  filter:
-    brightness(1.05);
+.cell:hover {
+  filter: brightness(1.05);
 }
 
-.cell:active{
-  transform:
-    scale(0.99);
+.cell:active {
+  transform: scale(0.99);
 }
 
-.cell.empty{
-  background:
-    var(--empty);
+.cell.empty {
+  background: var(--empty);
 
-  color:
-    #0f172a;
+  color: #0f172a;
 
-  border-color:
-    rgba(15,23,42,0.25);
+  border-color: rgba(15, 23, 42, 0.25);
 }
 
-.cell.blocked{
-  background:
-    var(--blocked);
+.cell.blocked {
+  background: var(--blocked);
 
-  cursor:
-    not-allowed;
+  cursor: not-allowed;
 
-  border-color:
-    rgba(255,255,255,0.15);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.cell.blue{
-  background:
-    var(--blue);
+.cell.blue {
+  background: var(--blue);
 
-  color:
-    white;
+  color: white;
 }
 
-.cell.red{
-  background:
-    var(--red);
+.cell.red {
+  background: var(--red);
 
-  color:
-    white;
+  color: white;
 }
-
 
 /* =========================
    COMPONENT CONNECTIONS
@@ -393,12 +355,11 @@ h1{
  * board structure.
  */
 
-
 /* -------------------------
    HORIZONTAL BRIDGE
    ------------------------- */
 
-.cell.connect-right::after{
+.cell.connect-right::after {
   content: "";
 
   position: absolute;
@@ -424,8 +385,7 @@ h1{
    */
   top: 50%;
 
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
 
   /*
    * Behind the cells.
@@ -435,12 +395,11 @@ h1{
   pointer-events: none;
 }
 
-
 /* -------------------------
    VERTICAL BRIDGE
    ------------------------- */
 
-.cell.connect-down::before{
+.cell.connect-down::before {
   content: "";
 
   position: absolute;
@@ -465,36 +424,30 @@ h1{
    */
   left: 50%;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
   z-index: -1;
 
   pointer-events: none;
 }
 
-
 /* -------------------------
    BLUE CONNECTIONS
    ------------------------- */
 
 .cell.blue.connect-right::after,
-.cell.blue.connect-down::before{
-  background:
-    var(--blue);
+.cell.blue.connect-down::before {
+  background: var(--blue);
 }
-
 
 /* -------------------------
    RED CONNECTIONS
    ------------------------- */
 
 .cell.red.connect-right::after,
-.cell.red.connect-down::before{
-  background:
-    var(--red);
+.cell.red.connect-down::before {
+  background: var(--red);
 }
-
 
 /* =========================
    COMPONENT SCORE
@@ -509,14 +462,13 @@ h1{
  * displays this number.
  */
 
-.component-score{
+.component-score {
   position: absolute;
 
   left: 50%;
   top: 50%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   font-size: 25px;
 
@@ -524,8 +476,7 @@ h1{
 
   line-height: 1;
 
-  letter-spacing:
-    -0.02em;
+  letter-spacing: -0.02em;
 
   color: white;
 
@@ -534,7 +485,6 @@ h1{
    */
   z-index: 2;
 }
-
 
 /* =========================
    ORIGINAL PIECE VALUE
@@ -547,7 +497,7 @@ h1{
  * individual placed piece.
  */
 
-.piece-value{
+.piece-value {
   position: absolute;
 
   top: 7px;
@@ -564,24 +514,21 @@ h1{
   z-index: 2;
 }
 
-
 /* =========================
    LCC HIGHLIGHT
    ========================= */
 
-.cell.lcc{
-  outline:
-    3px solid var(--gold);
+.cell.lcc {
+  outline: 3px solid var(--gold);
 
   outline-offset: 0;
 }
-
 
 /* =========================
    PIECE TRACKER
    ========================= */
 
-.piece-tracker{
+.piece-tracker {
   display: flex;
 
   flex-direction: column;
@@ -589,7 +536,7 @@ h1{
   gap: 8px;
 }
 
-.row{
+.row {
   display: flex;
 
   flex-wrap: wrap;
@@ -597,7 +544,7 @@ h1{
   gap: 6px;
 }
 
-.piece-box{
+.piece-box {
   min-width: 36px;
 
   height: 36px;
@@ -617,53 +564,45 @@ h1{
   font-size: 14px;
 }
 
-.row.blue .piece-box{
-  background:
-    var(--blue);
+.row.blue .piece-box {
+  background: var(--blue);
 
   color: white;
 }
 
-.row.red .piece-box{
-  background:
-    var(--red);
+.row.red .piece-box {
+  background: var(--red);
 
   color: white;
 }
 
-.piece-box.used{
-  background:
-    #374151 !important;
+.piece-box.used {
+  background: #374151 !important;
 
-  color:
-    #9ca3af;
+  color: #9ca3af;
 }
 
-.piece-box.current{
-  outline:
-    2px solid white;
+.piece-box.current {
+  outline: 2px solid white;
 
-  outline-offset:
-    1px;
+  outline-offset: 1px;
 }
-
 
 /* =========================
    RESULT
    ========================= */
 
-.result{
+.result {
   margin-top: 22px;
 }
 
-.result h2{
-  margin:
-    0 0 10px 0;
+.result h2 {
+  margin: 0 0 10px 0;
 
   font-size: 18px;
 }
 
-.scores{
+.scores {
   display: flex;
 
   gap: 12px;
@@ -671,194 +610,213 @@ h1{
   flex-wrap: wrap;
 }
 
-.score{
-  flex:
-    1 1 220px;
+.score {
+  flex: 1 1 220px;
 
   padding: 12px;
 
   border-radius: 16px;
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
-  background:
-    rgba(0,0,0,0.12);
+  background: rgba(0, 0, 0, 0.12);
 }
 
-.score .label{
-  color:
-    var(--muted);
+.score .label {
+  color: var(--muted);
 
-  font-size:
-    13px;
+  font-size: 13px;
 }
 
-.score .value{
-  font-size:
-    30px;
+.score .value {
+  font-size: 30px;
 
-  font-weight:
-    900;
+  font-weight: 900;
 
-  margin-top:
-    4px;
+  margin-top: 4px;
 }
 
-.score.blue{
-  background:
-    rgba(59,130,246,0.18);
+.score.blue {
+  background: rgba(59, 130, 246, 0.18);
 }
 
-.score.red{
-  background:
-    rgba(239,68,68,0.18);
+.score.red {
+  background: rgba(239, 68, 68, 0.18);
 }
 
-.winner{
-  margin-top:
-    10px;
+.winner {
+  margin-top: 10px;
 
-  font-weight:
-    800;
+  font-weight: 800;
 
-  font-size:
-    16px;
+  font-size: 16px;
 }
 
-.hint{
-  margin-top:
-    8px;
+.hint {
+  margin-top: 8px;
 
-  color:
-    var(--muted);
+  color: var(--muted);
 
-  font-size:
-    12px;
+  font-size: 12px;
 }
 
-.footer{
-  margin-top:
-    16px;
+.footer {
+  margin-top: 16px;
 
-  color:
-    var(--muted);
+  color: var(--muted);
 
-  font-size:
-    13px;
+  font-size: 13px;
 
-  text-align:
-    center;
+  text-align: center;
 }
-
 
 /* =========================
    VALUE MODE
    ========================= */
 
-.mode-control{
+.mode-control {
   display: flex;
 
   align-items: center;
 
   gap: 8px;
 
-  background:
-    rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
-  border-radius:
-    12px;
+  border-radius: 12px;
 
-  padding:
-    8px 10px;
+  padding: 8px 10px;
 }
 
-.mode-label{
-  font-size:
-    13px;
+.mode-label {
+  font-size: 13px;
 
-  color:
-    var(--muted);
+  color: var(--muted);
 
-  font-weight:
-    600;
+  font-weight: 600;
 }
 
-.mode-select{
-  background:
-    #0f172a;
+.mode-select {
+  background: #0f172a;
 
-  color:
-    var(--text);
+  color: var(--text);
 
-  border:
-    1px solid var(--border);
+  border: 1px solid var(--border);
 
-  border-radius:
-    8px;
+  border-radius: 8px;
 
-  padding:
-    6px 10px;
+  padding: 6px 10px;
 
-  font-size:
-    13px;
+  font-size: 13px;
 
-  font-weight:
-    600;
+  font-weight: 600;
 }
-
 
 /* =========================
    RESPONSIVE
    ========================= */
 
-@media (max-width: 980px){
-
-  .game-layout{
-    grid-template-columns:
-      1fr;
+@media (max-width: 980px) {
+  .game-layout {
+    grid-template-columns: 1fr;
   }
 
-  .header{
-    flex-direction:
-      column;
+  .header {
+    flex-direction: column;
 
-    align-items:
-      stretch;
+    align-items: stretch;
   }
 
-  .controls{
-    justify-content:
-      flex-start;
+  .controls {
+    justify-content: flex-start;
   }
 
-  .board-panel{
-    overflow-x:
-      auto;
+  .board-panel {
+    overflow-x: auto;
   }
 }
 
-
-@media (max-width: 640px){
-
-  .app{
-    padding:
-      18px 12px 28px;
+@media (max-width: 640px) {
+  .app {
+    padding: 18px 12px 28px;
   }
 
-  h1{
-    font-size:
-      30px;
+  h1 {
+    font-size: 30px;
   }
 
-  .board{
-    transform:
-      scale(0.92);
+  .board {
+    transform: scale(0.92);
 
-    transform-origin:
-      top center;
+    transform-origin: top center;
   }
+}
+/* =========================
+   LIVE CURRENT SCORES
+   ========================= */
+
+.live-scores {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+}
+
+.live-score {
+  padding: 12px;
+
+  border-radius: 14px;
+
+  text-align: center;
+
+  border: 1px solid var(--border);
+}
+
+.live-score.blue {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.live-score.red {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.live-score-label {
+  font-size: 12px;
+
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.05em;
+
+  color: var(--muted);
+}
+
+.live-score-value {
+  margin-top: 4px;
+
+  font-size: 32px;
+
+  font-weight: 900;
+
+  line-height: 1.1;
+}
+
+.live-score.blue .live-score-value {
+  color: var(--blue);
+}
+
+.live-score.red .live-score-value {
+  color: var(--red);
+}
+
+.live-score-size {
+  margin-top: 4px;
+
+  font-size: 11px;
+
+  color: var(--muted);
 }
