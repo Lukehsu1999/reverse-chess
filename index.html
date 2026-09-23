@@ -25,9 +25,18 @@
             </select>
           </label>
 
+          <label class="mode-control" id="roleControl">
+            <span class="mode-label">Role</span>
+            <select id="roleSelect" class="mode-select">
+              <option value="first" selected>First (Blue)</option>
+              <option value="second">Second (Red)</option>
+            </select>
+          </label>
+
           <label class="mode-control">
             <span class="mode-label">Mode</span>
             <select id="modeSelect" class="mode-select">
+              <option value="static">Static (All 1s)</option>
               <option value="linear">Linear</option>
               <option value="decreaseLinear">DecreaseLinear</option>
               <option value="fibonacci" selected>Fibonacci</option>
