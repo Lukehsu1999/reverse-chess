@@ -12,10 +12,6 @@ export const CellType = {
 };
 
 export function generateValues(mode, n = PIECES) {
-  if (mode === "static") {
-    return Array(n).fill(1);
-  }
-
   if (mode === "linear") {
     return Array.from({ length: n }, (_, i) => i + 1);
   }
@@ -27,18 +23,12 @@ export function generateValues(mode, n = PIECES) {
   if (mode === "fibonacci") {
     const fib = [1, 1];
     while (fib.length < n) {
-      fib.push(
-        fib[fib.length - 1] +
-        fib[fib.length - 2]
-      );
+      fib.push(fib[fib.length - 1] + fib[fib.length - 2]);
     }
     return fib.slice(0, n);
   }
 
-  return Array.from(
-    { length: n },
-    (_, i) => i + 1
-  );
+  return Array.from({ length: n }, (_, i) => i + 1);
 }
 
 export function cloneBoard(board) {
