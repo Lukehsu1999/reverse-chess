@@ -27,7 +27,6 @@ import {
   sameOwner,
 } from "./analysis.js";
 
-
 // =========================
 // DOM
 // =========================
@@ -49,12 +48,6 @@ const elModeSelect =
 
 const elPlayModeSelect =
   document.getElementById("playModeSelect");
-
-const elRoleSelect =
-  document.getElementById("roleSelect");
-
-const elRoleControl =
-  document.getElementById("roleControl");
 
 const elTurn =
   document.getElementById("turnPill");
@@ -98,7 +91,6 @@ const elRedTracker =
 const elStartHint =
   document.getElementById("startHint");
 
-
 // =========================
 // APP STATE
 // =========================
@@ -113,7 +105,6 @@ let computerThinking = false;
 // a scheduled AI turn.
 let aiGeneration = 0;
 
-
 // =========================
 // PLAY MODE
 // =========================
@@ -123,38 +114,6 @@ function isComputerGame() {
     elPlayModeSelect?.value === "computer"
   );
 }
-
-function humanPlayer() {
-  return (
-    elRoleSelect?.value === "second"
-      ? "red"
-      : "blue"
-  );
-}
-
-function computerPlayer() {
-  return (
-    humanPlayer() === "blue"
-      ? "red"
-      : "blue"
-  );
-}
-
-function playerName(player) {
-  return player === "blue"
-    ? "Blue"
-    : "Red";
-}
-
-function updateRoleControl() {
-  if (!elRoleControl) {
-    return;
-  }
-
-  elRoleControl.hidden =
-    !isComputerGame();
-}
-
 
 // =========================
 // START HINT
@@ -175,17 +134,10 @@ function updateStartHint() {
   elStartHint.hidden = false;
 
   if (isComputerGame()) {
-    if (humanPlayer() === "blue") {
-      elStartHint.innerHTML = `
-        <span>Tap a cell to play</span>
-        <span class="start-hint-arrow">↓</span>
-      `;
-    } else {
-      elStartHint.innerHTML = `
-        <span>Computer makes the first move</span>
-        <span class="start-hint-arrow">↓</span>
-      `;
-    }
+    elStartHint.innerHTML = `
+      <span>Tap a cell to play</span>
+      <span class="start-hint-arrow">↓</span>
+    `;
   } else {
     elStartHint.innerHTML = `
       <span>Blue — tap a cell to start</span>
@@ -193,7 +145,6 @@ function updateStartHint() {
     `;
   }
 }
-
 
 // =========================
 // COMPUTER AGENT
@@ -213,7 +164,6 @@ function createComputerAgent() {
     deterministic: true,
   });
 }
-
 
 // =========================
 // HISTORY
@@ -235,7 +185,6 @@ function restoreGame(snapshot) {
 function pushHistory() {
   history.push(snapshotGame());
 }
-
 
 // =========================
 // FINAL RESULT
@@ -293,7 +242,6 @@ function finalizeIfNeeded() {
   elResult.hidden = false;
 }
 
-
 // =========================
 // HUMAN MOVE
 // =========================
@@ -306,11 +254,11 @@ function handleCellClick(r, c) {
     return;
   }
 
-  // In computer mode, only allow
-  // clicks during the human player's turn.
+  // In computer mode the human
+  // always plays Blue.
   if (
     isComputerGame() &&
-    game.current !== humanPlayer()
+    game.current !== "blue"
   ) {
     return;
   }
@@ -328,12 +276,11 @@ function handleCellClick(r, c) {
   if (
     isComputerGame() &&
     !game.gameOver &&
-    game.current === computerPlayer()
+    game.current === "red"
   ) {
     scheduleComputerTurn();
   }
 }
-
 
 // =========================
 // COMPUTER MOVE
@@ -349,7 +296,7 @@ function scheduleComputerTurn() {
   render();
 
   // Give the browser time to paint
-  // the previous move before minimax runs.
+  // the human move before minimax runs.
   setTimeout(() => {
     // The game may have been reset,
     // undone, or switched while this
@@ -358,7 +305,7 @@ function scheduleComputerTurn() {
       generation !== aiGeneration ||
       !isComputerGame() ||
       game.gameOver ||
-      game.current !== computerPlayer()
+      game.current !== "red"
     ) {
       computerThinking = false;
 
@@ -371,13 +318,10 @@ function scheduleComputerTurn() {
     const agent =
       createComputerAgent();
 
-    const aiPlayer =
-      computerPlayer();
-
     const action =
       agent.selectAction(
         game,
-        aiPlayer,
+        "red",
       );
 
     if (action) {
@@ -398,7 +342,6 @@ function scheduleComputerTurn() {
   }, 120);
 }
 
-
 // =========================
 // STATUS
 // =========================
@@ -414,15 +357,12 @@ function updateStatus() {
 
   if (computerThinking) {
     elPlayer.textContent =
-      `Computer is thinking… (${playerName(computerPlayer())})`;
+      "Computer is thinking…";
   } else if (isComputerGame()) {
-    if (game.current === humanPlayer()) {
-      elPlayer.textContent =
-        `Your turn (${playerName(humanPlayer())})`;
-    } else {
-      elPlayer.textContent =
-        `Computer (${playerName(computerPlayer())})`;
-    }
+    elPlayer.textContent =
+      game.current === "blue"
+        ? "Your turn (Blue)"
+        : "Computer (Red)";
   } else {
     elPlayer.textContent =
       `Current: ${
@@ -452,7 +392,6 @@ function updateStatus() {
   elUndo.disabled =
     history.length <= 1;
 }
-
 
 // =========================
 // PIECE TRACKER
@@ -514,7 +453,6 @@ function renderTracker() {
     }
   }
 }
-
 
 // =========================
 // BOARD
@@ -607,7 +545,7 @@ function renderBoard(
           (
             !isComputerGame() ||
             game.current ===
-              humanPlayer()
+              "blue"
           );
 
         if (humanCanPlay) {
@@ -743,7 +681,6 @@ function renderBoard(
   }
 }
 
-
 // =========================
 // CURRENT SCORES
 // =========================
@@ -786,7 +723,6 @@ function updateCurrentScores(
     }`;
 }
 
-
 // =========================
 // RENDER
 // =========================
@@ -805,7 +741,6 @@ function render() {
     components,
   );
 }
-
 
 // =========================
 // NEW / RESET GAME
@@ -842,21 +777,9 @@ function startGame({
 
   elResult.hidden = true;
 
-  updateRoleControl();
   updateStatus();
   render();
-
-  // If the human chose Second,
-  // Blue belongs to the computer,
-  // so the computer opens the game.
-  if (
-    isComputerGame() &&
-    game.current === computerPlayer()
-  ) {
-    scheduleComputerTurn();
-  }
 }
-
 
 // =========================
 // UNDO
@@ -875,16 +798,18 @@ function undoOneStep() {
   computerThinking = false;
 
   if (isComputerGame()) {
-    // Remove the current state.
-    history.pop();
+    // Return to previous
+    // human decision point.
+    const steps =
+      game.current === "blue"
+        ? 2
+        : 1;
 
-    // Keep stepping backward until we
-    // reach a human decision point.
-    while (
-      history.length > 1 &&
-      history[
-        history.length - 1
-      ].current !== humanPlayer()
+    for (
+      let i = 0;
+      i < steps &&
+      history.length > 1;
+      i++
     ) {
       history.pop();
     }
@@ -901,22 +826,7 @@ function undoOneStep() {
   finalizeIfNeeded();
   updateStatus();
   render();
-
-  // Normally undo lands on a human
-  // decision point.
-  //
-  // This fallback also handles the
-  // special opening state when the
-  // human is playing Second.
-  if (
-    isComputerGame() &&
-    !game.gameOver &&
-    game.current === computerPlayer()
-  ) {
-    scheduleComputerTurn();
-  }
 }
-
 
 // =========================
 // CONTROLS
@@ -963,17 +873,6 @@ if (elPlayModeSelect) {
       }),
   );
 }
-
-if (elRoleSelect) {
-  elRoleSelect.addEventListener(
-    "change",
-    () =>
-      startGame({
-        sameBlock: false,
-      }),
-  );
-}
-
 
 // =========================
 // START
