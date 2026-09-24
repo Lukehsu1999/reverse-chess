@@ -17,8 +17,8 @@ export class MinimaxAgent {
     solveEndgameAt = 10,
     heuristicEval = "current_lcc_diff_plus_liberty",
     deterministic = true,
-    lccWeight = 7.0,
-    libertyWeight = 1.0,
+    lccWeight = 5.0,
+    libertyWeight = 7.0,
   } = {}) {
     if (!MinimaxAgent.VALID_HEURISTICS.has(heuristicEval)) {
       throw new Error(`Unknown heuristicEval: ${heuristicEval}`);
@@ -156,37 +156,8 @@ export class MinimaxAgent {
   }
 }
 
-export function heuristicConfigForValueMode(valueMode) {
-  switch (valueMode) {
-    case "static":
-      return {
-        heuristicEval: "current_lcc_diff",
-        lccWeight: 10.0,
-        libertyWeight: 1.0,
-      };
-
-    case "linear":
-      return {
-        heuristicEval: "current_lcc_diff_plus_liberty",
-        lccWeight: 5.0,
-        libertyWeight: 7.0,
-      };
-
-    case "decreaseLinear":
-      return {
-        heuristicEval: "current_lcc_diff_plus_liberty",
-        lccWeight: 5.0,
-        libertyWeight: 7.0,
-      };
-
-    case "fibonacci":
-      return {
-        heuristicEval: "liberty",
-        lccWeight: 0.0,
-        libertyWeight: 1.0,
-      };
-
-    default:
-      throw new Error(`Unknown valueMode: ${valueMode}`);
-  }
+export function heuristicForValueMode(valueMode) {
+  return valueMode === "fibonacci"
+    ? "liberty"
+    : "current_lcc_diff_plus_liberty";
 }
